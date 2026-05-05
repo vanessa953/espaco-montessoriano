@@ -1,0 +1,2802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espaço Montessoriano — Sistema Integrado</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#2D6A4F;--verde2:#1B4332;--verde-c:#52B788;--menta:#D8F3DC;
+  --terra:#B5838D;--areia:#F5ECD7;--creme:#FDFAF4;
+  --azul:#3B82F6;--roxo:#7C3AED;--amarelo:#F59E0B;--vermelho:#EF4444;
+  --cinza:#6B7280;--escuro:#111827;
+  --sombra:0 4px 28px rgba(45,106,79,.10);--sombra2:0 20px 60px rgba(0,0,0,.20);--r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--escuro);min-height:100vh;}
+
+/* LOADING */
+#loadingScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1B4332,#2D6A4F);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
+.loading-leaf{font-size:3rem;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.7}}
+.loading-text{color:rgba(255,255,255,.7);font-size:.85rem;margin-top:16px;letter-spacing:1px;}
+
+/* ENTRY */
+#entryScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(150deg,#1B4332 0%,#2D6A4F 50%,#40916C 100%);position:relative;overflow:hidden;}
+#entryScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(82,183,136,.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(181,131,141,.15) 0%,transparent 55%);}
+.entry-brand{text-align:center;margin-bottom:44px;position:relative;z-index:1;animation:fadeUp .5s ease;}
+.entry-leaf{font-size:3.2rem;display:block;margin-bottom:12px;}
+.entry-title{font-family:'Cormorant Garamond',serif;color:#fff;font-size:2rem;font-weight:700;}
+.entry-sub{color:rgba(255,255,255,.5);font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;margin-top:6px;}
+.entry-cards{display:flex;gap:20px;position:relative;z-index:1;animation:fadeUp .6s ease;}
+.entry-card{background:rgba(255,255,255,.97);border-radius:22px;padding:36px 32px;width:240px;text-align:center;cursor:pointer;transition:all .22s;box-shadow:var(--sombra2);border:2px solid transparent;}
+.entry-card:hover{transform:translateY(-8px);border-color:var(--verde-c);}
+.entry-card.fam:hover{border-color:var(--terra);}
+.ec-icon{font-size:3.2rem;display:block;margin-bottom:14px;}
+.ec-title{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:700;margin-bottom:6px;}
+.ec-desc{font-size:.75rem;color:var(--cinza);line-height:1.6;}
+.ec-btn{display:inline-block;margin-top:18px;background:var(--verde);color:#fff;border-radius:10px;padding:9px 20px;font-size:.8rem;font-weight:700;}
+.entry-card.fam .ec-btn{background:var(--terra);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOGIN PROFISSIONAL */
+#loginProfScreen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1B4332 0%,#2D6A4F 55%,#40916C 100%);}
+.lp-wrap{display:flex;border-radius:24px;overflow:hidden;box-shadow:var(--sombra2);animation:fadeUp .5s ease;max-height:92vh;}
+.lp-left{width:260px;background:var(--verde2);padding:36px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.lp-leaf{font-size:2.5rem;margin-bottom:12px;}
+.lp-brand{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.4rem;font-weight:700;text-align:center;line-height:1.2;}
+.lp-sub{color:rgba(255,255,255,.4);font-size:.63rem;letter-spacing:2px;text-transform:uppercase;margin-top:5px;text-align:center;}
+.lp-divider{width:36px;height:2px;background:var(--verde-c);border-radius:2px;margin:18px auto;}
+.lp-info{color:rgba(255,255,255,.4);font-size:.7rem;text-align:center;line-height:1.7;}
+.lp-right{width:390px;background:#fff;padding:30px;overflow-y:auto;}
+.lp-back{display:inline-flex;align-items:center;gap:6px;font-size:.73rem;color:var(--cinza);cursor:pointer;margin-bottom:14px;font-weight:600;}
+.lp-back:hover{color:var(--verde);}
+.lp-right h2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;margin-bottom:4px;}
+.lp-right p{color:var(--cinza);font-size:.76rem;margin-bottom:16px;}
+.err-box{background:#FEE2E2;color:#DC2626;border-radius:8px;padding:9px 13px;font-size:.75rem;font-weight:600;margin-bottom:11px;display:none;}
+.prof-group{margin-bottom:14px;}
+.pg-label{font-size:.6rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px;}
+.pg-items{display:flex;flex-direction:column;gap:3px;}
+.uq{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1.5px solid #E8EEEA;cursor:pointer;transition:all .13s;background:#FAFDFB;}
+.uq:hover{border-color:var(--verde-c);background:var(--menta);}
+.uq.sel{border-color:var(--verde);background:var(--menta);}
+.uq-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+.uq-name{font-size:.77rem;font-weight:600;}
+.uq-role{font-size:.61rem;color:var(--cinza);}
+.uq-badge{margin-left:auto;font-size:.54rem;padding:2px 6px;border-radius:20px;font-weight:700;text-transform:uppercase;flex-shrink:0;}
+.pw-lbl{display:block;font-size:.68rem;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;margin-top:8px;}
+.pw-inp{width:100%;padding:10px 12px;border:1.5px solid #E0E7E4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;transition:border .15s;margin-bottom:11px;}
+.pw-inp:focus{border-color:var(--verde-c);}
+.btn-entrar{width:100%;padding:12px;background:linear-gradient(135deg,var(--verde),var(--verde-c));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.btn-entrar:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(45,106,79,.3);}
+.btn-entrar:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* LOGIN FAMÍLIA */
+#loginFamScreen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(145deg,#1B4332 0%,#2D6A4F 45%,#52B788 100%);}
+.lf-card{background:#fff;border-radius:26px;width:400px;max-width:93vw;box-shadow:var(--sombra2);animation:fadeUp .5s ease;overflow:hidden;}
+.lf-top{background:linear-gradient(135deg,var(--terra),#C9ABB1);padding:30px;text-align:center;}
+.lf-leaf{font-size:2.3rem;display:block;margin-bottom:9px;}
+.lf-title{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.55rem;font-weight:700;}
+.lf-sub{color:rgba(255,255,255,.55);font-size:.66rem;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.lf-body{padding:24px 30px 28px;}
+.lf-back{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--cinza);cursor:pointer;margin-bottom:14px;font-weight:600;}
+.lf-lbl{display:block;font-size:.68rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px;}
+.lf-inp{width:100%;padding:11px 13px;border:1.5px solid #E0E7E4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;transition:border .16s;margin-bottom:12px;}
+.lf-inp:focus{border-color:var(--terra);}
+.btn-fam{width:100%;padding:12px;background:linear-gradient(135deg,var(--terra),#C9ABB1);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.btn-fam:hover{transform:translateY(-2px);}
+.btn-fam:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.lf-hint{text-align:center;font-size:.68rem;color:var(--cinza);margin-top:11px;font-style:italic;}
+
+/* APP CLÍNICO */
+#appClinico{display:none;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:238px;background:linear-gradient(180deg,var(--verde2) 0%,#162E22 100%);display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 32px rgba(0,0,0,.18);}
+.logo-area{padding:20px 17px 13px;border-bottom:1px solid rgba(255,255,255,.1);}
+.logo-leaf{font-size:1.4rem;}
+.logo-name{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1rem;font-weight:700;line-height:1.2;margin-top:3px;}
+.logo-sub{color:rgba(255,255,255,.32);font-size:.57rem;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.nav{padding:10px 0;flex:1;overflow-y:auto;}
+.nav-sec{padding:7px 15px 2px;color:rgba(255,255,255,.24);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 17px;cursor:pointer;color:rgba(255,255,255,.6);font-size:.8rem;font-weight:500;transition:all .14s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;border-left-color:var(--verde-c);}
+.nav-item.locked{opacity:.26;cursor:not-allowed;}
+.ni{font-size:.88rem;width:15px;text-align:center;}
+.sidebar-foot{padding:11px 15px;border-top:1px solid rgba(255,255,255,.08);}
+.s-user{display:flex;align-items:center;gap:8px;}
+.s-av{width:29px;height:29px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;}
+.s-name{color:#fff;font-size:.76rem;font-weight:600;}
+.s-role{color:rgba(255,255,255,.34);font-size:.59rem;}
+.btn-logout{margin-top:7px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.48);border-radius:7px;padding:6px;font-size:.68rem;cursor:pointer;transition:all .14s;font-family:'DM Sans',sans-serif;}
+.btn-logout:hover{background:rgba(239,68,68,.16);color:#FCA5A5;}
+.main{margin-left:238px;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid #E8EEE9;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 7px rgba(0,0,0,.04);}
+.page-ttl{font-family:'Cormorant Garamond',serif;font-size:1.28rem;font-weight:700;}
+.topbar-r{display:flex;align-items:center;gap:10px;}
+.topbar-date{color:var(--cinza);font-size:.72rem;}
+.access-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.64rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.b-coord{background:#DCFCE7;color:#15803D;}.b-sup{background:#EDE9FE;color:#6D28D9;}.b-clin{background:#DBEAFE;color:#1D4ED8;}
+.content{padding:20px 24px;}
+.section{display:none;animation:fadeIn .2s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* COMPONENTES */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:#fff;border-radius:var(--r);padding:16px 14px;box-shadow:var(--sombra);border-top:4px solid var(--verde-c);transition:transform .16s;}
+.kpi:hover{transform:translateY(-3px);}
+.kpi.k2{border-top-color:var(--terra)}.kpi.k3{border-top-color:#D4A853}.kpi.k4{border-top-color:var(--azul)}
+.kpi-lbl{font-size:.62rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px;}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:700;line-height:1;}
+.kpi-sub{font-size:.67rem;color:var(--cinza);margin-top:3px;}
+.card{background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--sombra);}
+.card-ttl{font-family:'Cormorant Garamond',serif;font-size:.96rem;font-weight:700;margin-bottom:11px;}
+.dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-bottom:15px;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;transition:all .15s;}
+.btn-p{background:var(--verde);color:#fff;}.btn-p:hover{background:var(--verde2);}
+.btn-s{background:var(--menta);color:var(--verde);}.btn-s:hover{background:#B7E4C7;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--areia);padding:8px 10px;text-align:left;font-size:.64rem;text-transform:uppercase;letter-spacing:.7px;color:var(--cinza);font-weight:600;}
+tbody tr{border-bottom:1px solid #F0F0F0;transition:background .1s;}
+tbody tr:hover{background:#F8FBF8;}
+td{padding:9px 10px;font-size:.77rem;vertical-align:middle;}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:.6rem;font-weight:700;text-transform:uppercase;}
+.t-tea{background:#DCFCE7;color:#16A34A}.t-tdah{background:#DBEAFE;color:#1D4ED8}.t-pc{background:#FEF3C7;color:#B45309}.t-t21{background:#FAE8FF;color:#7C3AED}
+.t-at{background:#DCFCE7;color:#16A34A}.t-in{background:#F3F4F6;color:#6B7280}
+.tbl-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:9px;}
+.search-box{display:flex;align-items:center;gap:5px;background:#fff;border:1.5px solid #DCE8DD;border-radius:8px;padding:6px 10px;flex:1;max-width:260px;}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.77rem;width:100%;background:transparent;}
+.pront-layout{display:grid;grid-template-columns:250px 1fr;gap:12px;}
+.pront-list{background:#fff;border-radius:var(--r);box-shadow:var(--sombra);overflow:hidden;max-height:70vh;overflow-y:auto;}
+.pp{padding:11px 13px;border-bottom:1px solid #F0F0F0;cursor:pointer;transition:background .1s;}
+.pp:hover{background:#F8FBF8;}
+.pp.sel{background:var(--menta);border-left:3px solid var(--verde);}
+.pp-name{font-weight:600;font-size:.79rem;}
+.pp-diag{font-size:.65rem;color:var(--cinza);}
+.pp-last{font-size:.61rem;color:var(--verde-c);margin-top:1px;}
+.evo-card{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--sombra);border-left:4px solid var(--verde-c);margin-bottom:9px;}
+.evo-hd{display:flex;justify-content:space-between;margin-bottom:6px;}
+.evo-prof{font-size:.68rem;font-weight:700;color:var(--verde);}
+.evo-dt{font-size:.66rem;color:var(--cinza);}
+.evo-txt{font-size:.77rem;line-height:1.62;color:#374151;}
+.fin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px;}
+.fc{border-radius:var(--r);padding:14px;}
+.fc-rec{background:linear-gradient(135deg,var(--verde),var(--verde-c));color:#fff;}
+.fc-des{background:linear-gradient(135deg,#B5838D,#C9ABB1);color:#fff;}
+.fc-sal{background:linear-gradient(135deg,var(--azul),#74B0E8);color:#fff;}
+.fc-lbl{font-size:.62rem;opacity:.8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.fc-val{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:700;}
+.eq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.pc{background:#fff;border-radius:var(--r);padding:18px;text-align:center;box-shadow:var(--sombra);transition:transform .16s;}
+.pc:hover{transform:translateY(-3px);}
+.pc-av{width:54px;height:54px;border-radius:50%;margin:0 auto 9px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+.pc-name{font-family:'Cormorant Garamond',serif;font-size:.92rem;font-weight:700;margin-bottom:2px;}
+.pc-spec{font-size:.68rem;color:var(--cinza);}
+.rr{display:flex;align-items:center;gap:7px;margin:5px 0;}
+.rr-lbl{font-size:.7rem;min-width:120px;font-weight:500;}
+.rr-fill{height:17px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:.6rem;color:#fff;font-weight:700;}
+.access-info{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:.73rem;font-weight:600;margin-bottom:12px;}
+.ai-coord{background:#DCFCE7;color:#15803D;}.ai-sup{background:#EDE9FE;color:#6D28D9;}.ai-clin{background:#DBEAFE;color:#1D4ED8;}
+.denied{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;}
+.denied-icon{font-size:2.8rem;margin-bottom:12px;}
+.denied h2{font-family:'Cormorant Garamond',serif;font-size:1.35rem;margin-bottom:5px;}
+.denied p{color:var(--cinza);font-size:.81rem;max-width:300px;line-height:1.6;}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:96px;margin-top:10px;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bar{width:100%;border-radius:4px 4px 0 0;}
+.bl{font-size:.55rem;color:var(--cinza);}
+.bv{font-size:.55rem;font-weight:700;color:var(--verde);}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px;}
+.dg{background:#22C55E;}.dy{background:#F59E0B;}.dr{background:#EF4444;}
+
+/* APP FAMÍLIA */
+#appFamilia{display:none;min-height:100vh;}
+.fam-header{background:linear-gradient(135deg,var(--verde2),var(--terra));padding:0 24px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 18px rgba(0,0,0,.14);}
+.fh-brand{display:flex;align-items:center;gap:9px;}
+.fh-name{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1rem;font-weight:700;}
+.fh-right{display:flex;align-items:center;gap:11px;}
+.pat-chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.23);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:6px;}
+.pat-chip span{color:#fff;font-size:.78rem;font-weight:600;}
+.btn-sair{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.78);border-radius:8px;padding:6px 12px;font-size:.71rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-sair:hover{background:rgba(239,68,68,.18);color:#FCA5A5;}
+.tabs-bar{background:#fff;border-bottom:1px solid #E8EEE9;padding:0 24px;display:flex;gap:2px;overflow-x:auto;}
+.tab{padding:13px 15px;font-size:.79rem;font-weight:600;color:var(--cinza);cursor:pointer;border-bottom:3px solid transparent;transition:all .14s;white-space:nowrap;}
+.tab:hover{color:var(--terra);}
+.tab.active{color:var(--terra);border-bottom-color:var(--terra);}
+.fam-content{padding:22px;max-width:920px;margin:0 auto;}
+.tab-section{display:none;animation:fadeIn .2s ease;}
+.tab-section.active{display:block;}
+.welcome-banner{background:linear-gradient(135deg,var(--verde2) 0%,var(--terra) 100%);border-radius:var(--r);padding:24px 26px;color:#fff;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 7px 24px rgba(45,106,79,.2);}
+.wb-text h2{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;margin-bottom:4px;}
+.wb-text p{font-size:.77rem;opacity:.8;line-height:1.55;}
+.wb-emoji{font-size:2.8rem;}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.sum-card{background:#fff;border-radius:var(--r);padding:15px 13px;box-shadow:var(--sombra);border-top:4px solid var(--terra);text-align:center;}
+.sum-card.s2{border-top-color:var(--verde);}.sum-card.s3{border-top-color:var(--azul);}
+.sum-lbl{font-size:.63rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px;}
+.sum-val{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;line-height:1;}
+.sum-sub{font-size:.66rem;color:var(--cinza);margin-top:3px;}
+.sess-card{background:#fff;border-radius:var(--r);padding:15px 17px;box-shadow:var(--sombra);display:flex;align-items:center;gap:14px;margin-bottom:9px;border-left:5px solid var(--terra);transition:transform .15s;}
+.sess-card:hover{transform:translateX(3px);}
+.sess-card.passada{border-left-color:#E5E7EB;opacity:.73;}
+.sess-date-box{min-width:50px;text-align:center;background:#FDF0F3;border-radius:10px;padding:8px 6px;}
+.sess-day{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:700;color:var(--terra);line-height:1;}
+.sess-month{font-size:.56rem;text-transform:uppercase;color:var(--terra);font-weight:700;letter-spacing:1px;}
+.sess-info{flex:1;}
+.sess-title{font-weight:700;font-size:.84rem;margin-bottom:2px;}
+.sess-meta{font-size:.7rem;color:var(--cinza);}
+.sess-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.sp{padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:700;text-transform:uppercase;}
+.sp-c{background:#DCFCE7;color:#16A34A;}.sp-a{background:#FEF3C7;color:#B45309;}.sp-r{background:#F3F4F6;color:#6B7280;}.sp-x{background:#FEE2E2;color:#DC2626;}
+.btn-conf{background:var(--terra);color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .14s;}
+.btn-conf:hover{background:#9A6470;}
+.btn-conf.done{background:#DCFCE7;color:#16A34A;cursor:default;}
+.atv-card{background:#fff;border-radius:var(--r);padding:17px;box-shadow:var(--sombra);margin-bottom:10px;}
+.atv-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.atv-title{font-family:'Cormorant Garamond',serif;font-size:.97rem;font-weight:700;}
+.atv-tag{padding:2px 8px;border-radius:20px;font-size:.61rem;font-weight:700;text-transform:uppercase;background:#FDF0F3;color:var(--terra);}
+.atv-steps{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;}
+.atv-steps li{display:flex;align-items:flex-start;gap:6px;font-size:.79rem;color:#374151;}
+.atv-steps li::before{content:'✅';flex-shrink:0;}
+.atv-check{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #F0F0F0;}
+.atv-check input{width:15px;height:15px;accent-color:var(--terra);cursor:pointer;}
+.atv-check label{font-size:.74rem;color:var(--cinza);cursor:pointer;}
+.rec-card{background:#fff;border-radius:var(--r);padding:15px;box-shadow:var(--sombra);border-left:4px solid var(--terra);margin-bottom:9px;}
+.rec-card.urg{border-left-color:var(--amarelo);}.rec-card.avi{border-left-color:var(--azul);}
+.rc-hd{display:flex;justify-content:space-between;margin-bottom:6px;}
+.rc-de{font-size:.69rem;font-weight:700;color:var(--terra);}
+.rc-dt{font-size:.64rem;color:var(--cinza);}
+.rc-title{font-weight:700;font-size:.83rem;margin-bottom:3px;}
+.rc-txt{font-size:.77rem;line-height:1.6;color:#374151;}
+.evo-card-f{background:#fff;border-radius:var(--r);padding:17px;box-shadow:var(--sombra);border-left:5px solid var(--terra);margin-bottom:10px;}
+.evo-esp{font-size:.68rem;font-weight:700;color:var(--terra);background:#FDF0F3;padding:2px 8px;border-radius:20px;}
+.evo-title-f{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:700;margin:7px 0 5px;}
+.evo-txt-f{font-size:.79rem;line-height:1.65;color:#374151;}
+.evo-conq{margin-top:10px;background:#FDF0F3;border-radius:8px;padding:10px 12px;}
+.evo-c-title{font-size:.65rem;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.evo-c-item{font-size:.77rem;color:#7A3040;display:flex;gap:5px;margin-bottom:3px;}
+.evo-c-item::before{content:'🌟';flex-shrink:0;}
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.gal-item{border-radius:10px;overflow:hidden;box-shadow:var(--sombra);cursor:pointer;transition:transform .15s;background:#fff;}
+.gal-item:hover{transform:scale(1.03);}
+.gal-img{width:100%;height:130px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;}
+.gal-info{padding:8px 10px;}
+.gal-title{font-size:.73rem;font-weight:700;}
+.gal-dt{font-size:.63rem;color:var(--cinza);margin-top:1px;}
+.gal-tag{font-size:.58rem;font-weight:700;color:var(--terra);background:#FDF0F3;padding:2px 6px;border-radius:20px;display:inline-block;margin-top:3px;}
+.msg-box{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sombra);}
+.msg-box h3{font-family:'Cormorant Garamond',serif;font-size:.97rem;font-weight:700;margin-bottom:11px;}
+.msg-fg{margin-bottom:10px;}
+.msg-fg label{display:block;font-size:.67rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;}
+.msg-fg select,.msg-fg textarea{width:100%;padding:9px 11px;border:1.5px solid #DCE8DD;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;transition:border .15s;}
+.msg-fg select:focus,.msg-fg textarea:focus{border-color:var(--terra);}
+.btn-send{background:var(--terra);color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-send:hover{background:#9A6470;}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lb-inner{background:#fff;border-radius:16px;max-width:500px;width:90%;overflow:hidden;}
+.lb-img{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:5rem;}
+.lb-body{padding:16px 20px 20px;}
+.lb-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;margin-bottom:3px;}
+.lb-desc{font-size:.79rem;color:#374151;line-height:1.6;margin-bottom:7px;}
+.lb-close{display:block;margin:0 auto;background:var(--cinza);color:#fff;border:none;border-radius:7px;padding:6px 16px;font-size:.76rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.44);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:470px;width:90%;box-shadow:var(--sombra2);animation:fadeUp .24s ease;max-height:88vh;overflow-y:auto;}
+.modal-ttl{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-weight:700;margin-bottom:14px;}
+.fg{margin-bottom:10px;}
+.fg label{display:block;font-size:.67rem;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 11px;border:1.5px solid #DCE8DD;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.81rem;outline:none;transition:border .14s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--verde-c);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.modal-foot{display:flex;justify-content:flex-end;gap:7px;margin-top:14px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--verde);color:#fff;padding:11px 17px;border-radius:10px;font-size:.8rem;font-weight:600;box-shadow:0 7px 24px rgba(45,106,79,.33);transform:translateY(70px);opacity:0;transition:all .26s;z-index:400;display:flex;align-items:center;gap:7px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{background:#EF4444;}.toast.warn{background:#F59E0B;}.toast.rosa{background:var(--terra);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:#C3E0CB;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loading-leaf">🌿</div>
+  <div class="loading-text">Conectando ao sistema...</div>
+</div>
+
+<!-- ENTRADA -->
+<div id="entryScreen">
+  <div class="entry-brand">
+    <span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span>
+    <div class="entry-sub" style="color:rgba(255,255,255,.65);font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;max-width:340px;text-align:center;line-height:1.6">Desenvolvimento infantil com olhar integrado:<br>educação, saúde e neurodesenvolvimento</div>
+  </div>
+  <div class="entry-cards">
+    <div class="entry-card" onclick="showLoginProf()">
+      <span class="ec-icon">👩‍⚕️</span>
+      <div class="ec-title">Sou Profissional</div>
+      <div class="ec-desc">Acesso ao sistema clínico, prontuários, agenda e gestão.</div>
+      <div class="ec-btn">Acessar sistema →</div>
+    </div>
+    <div class="entry-card fam" onclick="showLoginFam()">
+      <span class="ec-icon">👨‍👩‍👧</span>
+      <div class="ec-title">Sou Familiar</div>
+      <div class="ec-desc">Acompanhe a agenda, atividades e evolução do seu filho.</div>
+      <div class="ec-btn">Acessar portal →</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN PROFISSIONAL -->
+<div id="loginProfScreen">
+  <div class="lp-wrap">
+    <div class="lp-left">
+      <span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span>
+      <div class="lp-sub" style="color:rgba(255,255,255,.45);font-size:.6rem;letter-spacing:1px;text-transform:uppercase;text-align:center;margin-top:4px;line-height:1.5">Sistema Clínico</div>
+      <div class="lp-divider"></div>
+      <div class="lp-info">Acesso restrito<br>à equipe autorizada.<br><br>Prontuários visíveis<br>apenas ao profissional<br>responsável.</div>
+    </div>
+    <div class="lp-right">
+      <div class="lp-back" onclick="voltarEntrada()">← Voltar</div>
+      <h2>Acesso Profissional</h2>
+      <p>Selecione seu perfil e digite sua senha.</p>
+      <div id="errProf" class="err-box"></div>
+      <div id="profileGroups"></div>
+      <label class="pw-lbl">Senha</label>
+      <input class="pw-inp" type="password" id="senhaProf" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')doLoginProf()">
+      <button class="btn-entrar" id="btnEntrarProf" onclick="doLoginProf()">Entrar no sistema →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN FAMÍLIA -->
+<div id="loginFamScreen">
+  <div class="lf-card">
+    <div class="lf-top">
+      <span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span>
+      <div class="lf-title" style="color:#fff;font-family:Cormorant Garamond,serif;font-size:1.4rem;font-weight:700">Portal da Família</div>
+    </div>
+    <div class="lf-body">
+      <div class="lf-back" onclick="voltarEntrada()">← Voltar</div>
+      <div id="errFam" class="err-box"></div>
+      <label class="lf-lbl">CPF do Responsável</label>
+      <input class="lf-inp" id="cpfFam" placeholder="000.000.000-00" maxlength="14" oninput="fmtCPF(this)" onkeydown="if(event.key==='Enter')doLoginFam()">
+      <label class="lf-lbl">Senha</label>
+      <input class="lf-inp" id="senhaFam" type="password" placeholder="Senha fornecida pela clínica" onkeydown="if(event.key==='Enter')doLoginFam()">
+      <button class="btn-fam" id="btnEntrarFam" onclick="doLoginFam()">Acessar Portal →</button>
+      <div class="lf-hint">Dúvidas: (61) 99323-6099</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP CLÍNICO -->
+<div id="appClinico">
+  <aside class="sidebar">
+    <div class="logo-area" style="padding:16px 14px 14px">
+      <div style="font-size:1.4rem">🌿</div>
+      <div style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1rem;font-weight:700;line-height:1.2;margin-top:4px">Espaço<br>Montessoriano</div>
+      <div style="color:rgba(255,255,255,.35);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;margin-top:3px">Gestão Clínica</div>
+    </div>
+    <nav class="nav" id="sidebarNav"></nav>
+    <div class="sidebar-foot">
+      <div class="s-user">
+        <div class="s-av" id="sAv"></div>
+        <div><div class="s-name" id="sName"></div><div class="s-role" id="sRole"></div></div>
+      </div>
+      <button class="btn-logout" onclick="logoutProf()">🚪 Sair</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="page-ttl" id="pageTitle">Dashboard</div>
+      <div class="topbar-r">
+        <div class="topbar-date" id="currentDate"></div>
+        <div class="access-badge" id="accessBadge"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="section" id="sec-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-lbl">Pacientes Ativos</div><div class="kpi-val" id="kpiPac">—</div><div class="kpi-sub" id="kpiPacSub"></div></div>
+          <div class="kpi k2"><div class="kpi-lbl">Sessões Hoje</div><div class="kpi-val" id="kpiSess">—</div><div class="kpi-sub" id="kpiSessSub"></div></div>
+          <div class="kpi k3"><div class="kpi-lbl">Receita do Mês</div><div class="kpi-val" id="kpiRec">—</div><div class="kpi-sub" id="kpiRecSub"></div></div>
+          <div class="kpi k4"><div class="kpi-lbl">Profissionais</div><div class="kpi-val" id="kpiProf">—</div><div class="kpi-sub">ativos na equipe</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card"><div class="card-ttl">📅 Próximas Sessões</div><div id="dashSessoes"><div style="color:var(--cinza);font-size:.8rem">Carregando...</div></div></div>
+          <div class="card">
+            <div class="card-ttl">⚡ Ações Rápidas</div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px" id="quickActions"></div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card"><div class="card-ttl">💹 Receita 2025</div><div class="bar-chart" id="barChart"></div></div>
+          <div class="card"><div class="card-ttl">🏷️ Diagnósticos</div>
+            <div class="rr"><span class="rr-lbl">TEA</span><div class="rr-fill" style="width:72%;background:var(--verde)">72%</div></div>
+            <div class="rr"><span class="rr-lbl">TDAH</span><div class="rr-fill" style="width:48%;background:var(--azul)">48%</div></div>
+            <div class="rr"><span class="rr-lbl">Paralisia Cerebral</span><div class="rr-fill" style="width:28%;background:var(--terra)">28%</div></div>
+            <div class="rr"><span class="rr-lbl">T21</span><div class="rr-fill" style="width:18%;background:#D4A853">18%</div></div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="sec-agenda">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <strong style="font-family:'Cormorant Garamond',serif;font-size:1rem">Agenda da Semana</strong>
+          <button class="btn btn-p" onclick="openModal('mAgend')">➕ Agendar</button>
+        </div>
+        <div class="card"><div id="agendaGrid"><div style="color:var(--cinza);font-size:.8rem;padding:20px">Carregando agenda...</div></div></div>
+      </section>
+      <section class="section" id="sec-pacientes">
+        <div class="tbl-toolbar">
+          <div class="search-box">🔍<input placeholder="Buscar paciente..." oninput="filterTable('tblPac',this.value)"></div>
+          <button class="btn btn-p" onclick="openModal('mPaciente')">➕ Novo Paciente</button>
+        </div>
+        <div class="card"><table id="tblPac"><thead><tr><th>#</th><th>Nome</th><th>Idade</th><th>Diagnóstico</th><th>Responsável</th><th>Profissional</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbodyPac"><tr><td colspan="8" style="text-align:center;color:var(--cinza);padding:20px">Carregando...</td></tr></tbody></table></div>
+      </section>
+      <section class="section" id="sec-prontuarios"><div id="prontContent"><div style="color:var(--cinza);font-size:.8rem;padding:20px">Carregando...</div></div></section>
+      <section class="section" id="sec-financeiro"><div id="finContent"></div></section>
+      <section class="section" id="sec-relatorios">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card"><div class="card-ttl">👥 Por Faixa Etária</div>
+            <div class="rr"><span class="rr-lbl">0–3 anos</span><div class="rr-fill" style="width:20%;background:var(--terra)">20%</div></div>
+            <div class="rr"><span class="rr-lbl">4–7 anos</span><div class="rr-fill" style="width:55%;background:var(--verde)">55%</div></div>
+            <div class="rr"><span class="rr-lbl">8–12 anos</span><div class="rr-fill" style="width:35%;background:var(--azul)">35%</div></div>
+            <div class="rr"><span class="rr-lbl">13+ anos</span><div class="rr-fill" style="width:15%;background:#D4A853">15%</div></div>
+          </div>
+          <div class="card"><div class="card-ttl">🏥 Por Especialidade</div>
+            <div class="rr"><span class="rr-lbl">Fonoaudiologia</span><div class="rr-fill" style="width:78%;background:var(--verde)">78%</div></div>
+            <div class="rr"><span class="rr-lbl">Psicologia</span><div class="rr-fill" style="width:65%;background:var(--azul)">65%</div></div>
+            <div class="rr"><span class="rr-lbl">Psicopedagogia</span><div class="rr-fill" style="width:55%;background:var(--roxo)">55%</div></div>
+            <div class="rr"><span class="rr-lbl">Pedagógico</span><div class="rr-fill" style="width:48%;background:#D4A853">48%</div></div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="sec-equipe">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-p" onclick="openModal('mProf')">➕ Novo Profissional</button></div>
+        <div class="eq-grid" id="equipeGrid"><div style="color:var(--cinza);font-size:.8rem">Carregando...</div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- MODAIS CLÍNICO -->
+<div class="modal-overlay" id="mPaciente"><div class="modal">
+  <div class="modal-ttl">👨‍👧 Novo Paciente</div>
+  <div class="fr"><div class="fg"><label>Nome</label><input id="pNome" placeholder="Nome completo"></div><div class="fg"><label>Nascimento</label><input id="pNasc" type="date"></div></div>
+  <div class="fr"><div class="fg"><label>Diagnóstico</label><select id="pDiag"><option>TEA Nível 1</option><option>TEA Nível 2</option><option>TEA Nível 3</option><option>TDAH</option><option>Paralisia Cerebral</option><option>T21</option><option>Outro</option></select></div><div class="fg"><label>CID-10</label><input id="pCid" placeholder="F84.0"></div></div>
+  <div class="fr"><div class="fg"><label>Responsável</label><input id="pResp"></div><div class="fg"><label>Telefone</label><input id="pTel" placeholder="(61) 9 0000-0000"></div></div>
+  <div class="fr"><div class="fg"><label>E-mail</label><input id="pEmail" type="email"></div><div class="fg"><label>Profissional</label><select id="pProf"></select></div></div>
+  <div class="fg"><label>Observações</label><textarea id="pObs" rows="2"></textarea></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mPaciente')">Cancelar</button><button class="btn btn-p" onclick="salvarPaciente()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mAgend"><div class="modal">
+  <div class="modal-ttl">📅 Novo Agendamento</div>
+  <div class="fr"><div class="fg"><label>Paciente</label><select id="aPac"></select></div><div class="fg"><label>Profissional</label><select id="aProf"></select></div></div>
+  <div class="fr"><div class="fg"><label>Data</label><input id="aData" type="date"></div><div class="fg"><label>Horário</label><input id="aHora" type="time"></div></div>
+  <div class="fr"><div class="fg"><label>Tipo</label><select id="aTipo"><option>Terapia Individual</option><option>Avaliação</option><option>Reunião Família</option><option>Triagem</option></select></div><div class="fg"><label>Duração</label><select id="aDur"><option value="45">45 min</option><option value="60" selected>60 min</option><option value="90">90 min</option></select></div></div>
+  <div class="fg"><label>Observações</label><textarea id="aObs" rows="2"></textarea></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mAgend')">Cancelar</button><button class="btn btn-p" onclick="salvarAgendamento()">Confirmar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mEvo"><div class="modal">
+  <div class="modal-ttl">📝 Registrar Evolução</div>
+  <div class="fr"><div class="fg"><label>Paciente</label><select id="ePac"></select></div><div class="fg"><label>Data</label><input id="eData" type="date"></div></div>
+  <div class="fr"><div class="fg"><label>Profissional</label><input id="eProf" readonly style="background:#F9FAFB"></div><div class="fg"><label>Tipo</label><select id="eTipo"><option>Terapia Individual</option><option>Avaliação</option><option>Reunião Família</option></select></div></div>
+  <div class="fg"><label>Relato da Sessão</label><textarea id="eRelato" rows="3" placeholder="Desenvolvimento, comportamentos, objetivos..."></textarea></div>
+  <div class="fg"><label>Orientações à Família</label><textarea id="eOrient" rows="2"></textarea></div>
+  <div class="fg"><label>Resumo para a Família (linguagem acessível)</label><textarea id="eResumo" rows="2" placeholder="Como explicaria para os pais..."></textarea></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mEvo')">Cancelar</button><button class="btn btn-p" onclick="salvarEvolucao()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mFin"><div class="modal">
+  <div class="modal-ttl">💰 Lançamento Financeiro</div>
+  <div class="fr"><div class="fg"><label>Tipo</label><select id="fTipo"><option>Receita</option><option>Despesa</option></select></div><div class="fg"><label>Data</label><input id="fData" type="date"></div></div>
+  <div class="fg"><label>Descrição</label><input id="fDesc" placeholder="Ex: Sessão — Nome do Paciente"></div>
+  <div class="fr"><div class="fg"><label>Categoria</label><select id="fCat"><option>Sessão Terapêutica</option><option>Avaliação</option><option>Aluguel</option><option>Salários</option><option>Material</option><option>Marketing</option><option>Outros</option></select></div><div class="fg"><label>Valor (R$)</label><input id="fValor" type="number" placeholder="0.00"></div></div>
+  <div class="fr"><div class="fg"><label>Pagamento</label><select id="fPgto"><option>PIX</option><option>Cartão Débito</option><option>Cartão Crédito</option><option>Dinheiro</option><option>Boleto</option></select></div><div class="fg"><label>Status</label><select id="fStatus"><option>Recebido/Pago</option><option>Pendente</option></select></div></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mFin')">Cancelar</button><button class="btn btn-p" onclick="salvarFinanceiro()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mProf"><div class="modal">
+  <div class="modal-ttl">👥 Novo Profissional</div>
+  <div class="fr"><div class="fg"><label>Nome</label><input id="prNome"></div><div class="fg"><label>Especialidade</label><select id="prEsp"><option>Fonoaudiologia</option><option>Pedagogia</option><option>Psicopedagogia</option><option>Nutrição</option><option>Psicologia</option><option>Psicomotricidade</option><option>Musicoterapia</option></select></div></div>
+  <div class="fr"><div class="fg"><label>E-mail</label><input id="prEmail" type="email"></div><div class="fg"><label>Telefone</label><input id="prTel"></div></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mProf')">Cancelar</button><button class="btn btn-p" onclick="salvarProfissional()">Salvar</button></div>
+</div></div>
+
+<!-- APP FAMÍLIA -->
+<div id="appFamilia">
+  <header class="fam-header">
+    <div class="fh-brand"><span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span></div>
+    <div class="fh-right">
+      <div class="pat-chip"><span id="famEmoji"></span><span id="famNome"></span></div>
+      <button class="btn-sair" onclick="logoutFam()">Sair</button>
+    </div>
+  </header>
+  <div class="tabs-bar">
+    <div class="tab active" onclick="switchTab('inicio',this)">🏠 Início</div>
+    <div class="tab" onclick="switchTab('agenda',this)">📅 Agenda</div>
+    <div class="tab" onclick="switchTab('atividades',this)">📝 Atividades</div>
+    <div class="tab" onclick="switchTab('evolucoes',this)">📈 Evoluções</div>
+    <div class="tab" onclick="switchTab('recados',this)">💬 Recados</div>
+    <div class="tab" onclick="switchTab('galeria',this)">📸 Galeria</div>
+    <div class="tab" onclick="switchTab('mensagem',this)">✉️ Falar com a Equipe</div>
+  </div>
+  <div class="fam-content">
+    <div class="tab-section active" id="tab-inicio">
+      <div class="welcome-banner"><div class="wb-text"><h2 id="wTitle">Olá!</h2><p id="wDesc"></p></div><div class="wb-emoji" id="wEmoji">🌟</div></div>
+      <div class="sum-grid">
+        <div class="sum-card"><div class="sum-lbl">Próxima Sessão</div><div class="sum-val" id="proxSessao">—</div><div class="sum-sub" id="proxSessaoSub"></div></div>
+        <div class="sum-card s2"><div class="sum-lbl">Sessões este mês</div><div class="sum-val" id="sessMes">—</div><div class="sum-sub" id="sessMesSub"></div></div>
+        <div class="sum-card s3"><div class="sum-lbl">Atividades</div><div class="sum-val" id="atvCount">—</div><div class="sum-sub">para fazer em casa</div></div>
+      </div>
+      <div style="background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--sombra);margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:.98rem;font-weight:700;margin-bottom:11px">📅 Próximas Sessões</div><div id="proxList"></div></div>
+      <div style="background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--sombra)"><div style="font-family:'Cormorant Garamond',serif;font-size:.98rem;font-weight:700;margin-bottom:11px">💬 Último Recado</div><div id="ultRecado"></div></div>
+    </div>
+    <div class="tab-section" id="tab-agenda"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Agenda de Sessões</div><div style="font-size:.74rem;color:var(--cinza);margin-top:2px">Confirme sua presença</div></div><div id="famAgendaList"></div></div>
+    <div class="tab-section" id="tab-atividades"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Atividades para Casa</div></div><div id="famAtvList"></div></div>
+    <div class="tab-section" id="tab-evolucoes"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Evolução Terapêutica</div><div style="font-size:.74rem;color:var(--cinza);margin-top:2px">Resumo em linguagem acessível</div></div><div id="famEvoList"></div></div>
+    <div class="tab-section" id="tab-recados">
+      <div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Recados da Equipe</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div id="famRecList"></div>
+        <div><div style="background:var(--menta);border-radius:var(--r);padding:16px"><div style="font-size:.7rem;font-weight:700;color:var(--verde);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px">📌 Avisos Gerais</div><div id="avisosGerais"></div></div></div>
+      </div>
+    </div>
+    <div class="tab-section" id="tab-galeria"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Galeria de Registros</div></div><div class="gal-grid" id="famGalList"></div></div>
+    <div class="tab-section" id="tab-mensagem">
+      <div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Falar com a Equipe</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="msg-box">
+          <h3>✉️ Nova Mensagem</h3>
+          <div class="msg-fg"><label>Para</label><select id="msgPara"></select></div>
+          <div class="msg-fg"><label>Assunto</label><select><option>Dúvida sobre a sessão</option><option>Dificuldade em casa</option><option>Reagendamento</option><option>Informar falta</option><option>Outro</option></select></div>
+          <div class="msg-fg"><label>Mensagem</label><textarea id="msgTxt" rows="5" placeholder="Escreva sua mensagem..."></textarea></div>
+          <button class="btn-send" onclick="enviarMsg()">Enviar →</button>
+        </div>
+        <div>
+          <div class="msg-box" style="margin-bottom:12px"><h3 style="margin-bottom:10px">📞 Contatos</h3><div id="contatosList"></div></div>
+          <div style="background:var(--areia);border-radius:var(--r);padding:13px;font-size:.74rem;color:var(--cinza);line-height:1.65">💡 Cancelamentos com menos de 24h: <strong style="color:var(--escuro)">(61) 99323-6099</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div onclick="event.stopPropagation()">
+    <div class="lb-inner">
+      <div class="lb-img" id="lbImg"></div>
+      <div class="lb-body">
+        <div class="lb-title" id="lbTitle"></div>
+        <div class="lb-desc" id="lbDesc"></div>
+        <button class="lb-close" onclick="closeLightbox()">✕ Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// SUPABASE — Conexão com banco de dados real
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = 'https://toldfsyxpkgdkpoqqrri.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_sH0m_Dqt2X9VCz1b6HepbQ_bEsb-hnK';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════
+// MÓDULOS — permissões por perfil
+// ═══════════════════════════════════════════════
+const MODULOS_POR_PERFIL = {
+  coordenadora: ['dashboard','agenda','pacientes','prontuarios','financeiro','relatorios','equipe'],
+  supervisao:   ['dashboard','agenda','pacientes','prontuarios','relatorios'],
+  clinico:      ['dashboard','agenda','pacientes','prontuarios','relatorios'],
+};
+
+const MODULO_INFO = {
+  dashboard:   {label:'Dashboard',   icon:'📊'},
+  agenda:      {label:'Agenda',      icon:'📅'},
+  pacientes:   {label:'Pacientes',   icon:'👨‍👧'},
+  prontuarios: {label:'Prontuários', icon:'📋'},
+  financeiro:  {label:'Financeiro',  icon:'💰'},
+  relatorios:  {label:'Relatórios',  icon:'📈'},
+  equipe:      {label:'Equipe',      icon:'👥'},
+};
+
+const AVISOS = ['📅 Feriado 12/05 — sem atendimentos','⏰ Confirme presença com 24h de antecedência','📱 WhatsApp: (61) 99323-6099','🌿 Recesso de inverno: 14/07 a 18/07/2025'];
+
+let currentUser = null;
+let currentFamily = null;
+let allProfissionais = [];
+let allPacientes = [];
+let confirmedSessions = {};
+
+// ═══════════════════════════════════════════════
+// INICIALIZAÇÃO
+// ═══════════════════════════════════════════════
+function init() {
+  // Mostra a tela IMEDIATAMENTE sem esperar o banco
+  buildLoginCards();
+  hide('loadingScreen');
+  show('entryScreen');
+  // Carrega profissionais do banco em segundo plano
+  setTimeout(() => {
+    sb.from('profissionais').select('*').eq('ativo', true).order('nome')
+      .then(({ data }) => { if (data && data.length) { allProfissionais = data; buildLoginCards(); } })
+      .catch(() => {});
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════
+// NAVEGAÇÃO ENTRE TELAS
+// ═══════════════════════════════════════════════
+function showLoginProf(){ hide('entryScreen'); show('loginProfScreen'); }
+function showLoginFam(){  hide('entryScreen'); show('loginFamScreen'); }
+function voltarEntrada(){ hideAll(); show('entryScreen'); }
+function show(id){ const el=document.getElementById(id); if(!el)return; el.style.display=id.includes('login')||id.includes('Screen')?'flex':'block'; }
+function hide(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+function hideAll(){ ['loadingScreen','entryScreen','loginProfScreen','loginFamScreen','appClinico','appFamilia'].forEach(hide); }
+
+// ═══════════════════════════════════════════════
+// LOGIN PROFISSIONAL
+// ═══════════════════════════════════════════════
+function buildLoginCards() {
+  // Se não carregou do banco, usa USERS local
+  const fonte = allProfissionais.length ? allProfissionais : USERS.map(u => ({
+    id: u.id, nome: u.nome, cargo: u.cargo, perfil: u.perfil,
+    emoji: u.emoji, cor: u.cor, especialidade: Array.isArray(u.especialidade) ? u.especialidade[0] : u.especialidade,
+    _local: true
+  }));
+  const bMap = {coordenadora:['#DCFCE7','#15803D','Coord.'],supervisao:['#EDE9FE','#6D28D9','Supervisão'],clinico:['#DBEAFE','#1D4ED8','Clínico']};
+  const grupoMap = {};
+  fonte.forEach(u => {
+    const g = u.grupo || (u.especialidade ? u.especialidade.split(' ')[0] : 'Coordenação');
+    if (!grupoMap[g]) grupoMap[g] = [];
+    grupoMap[g].push(u);
+  });
+  document.getElementById('profileGroups').innerHTML = Object.entries(grupoMap).map(([g, users]) => `
+    <div class="prof-group"><div class="pg-label">${g}</div><div class="pg-items">
+    ${users.map(u => { const[bg,cor,lbl]=bMap[u.perfil]||['#F3F4F6','#6B7280','—']; return `
+      <div class="uq" id="uq_${u.id}" onclick="selUser('${u.id}')">
+        <div class="uq-av" style="background:${u.cor||'#999'}22">${u.emoji||'👤'}</div>
+        <div><div class="uq-name">${u.nome}</div><div class="uq-role">${u.cargo||''}</div></div>
+        <span class="uq-badge" style="background:${bg};color:${cor}">${lbl}</span>
+      </div>`; }).join('')}
+    </div></div>`).join('');
+}
+
+let selUserId = null;
+function selUser(id) {
+  selUserId = id;
+  document.querySelectorAll('.uq').forEach(e => e.classList.remove('sel'));
+  document.getElementById('uq_'+id)?.classList.add('sel');
+  document.getElementById('senhaProf').focus();
+}
+
+async function doLoginProf() {
+  const err = document.getElementById('errProf');
+  err.style.display = 'none';
+  if (!selUserId) { err.textContent='Selecione um perfil.'; err.style.display='block'; return; }
+  const senha = document.getElementById('senhaProf').value;
+  const btn = document.getElementById('btnEntrarProf');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  
+  // Tenta primeiro autenticar localmente (mais rápido)
+  const localUser = USERS.find(u => u.id === selUserId && u.senha === senha);
+  if (localUser) {
+    currentUser = {
+      id: localUser.id, nome: localUser.nome, cargo: localUser.cargo,
+      perfil: localUser.perfil, emoji: localUser.emoji, cor: localUser.cor,
+      especialidade: localUser.especialidade, modulos: localUser.modulos
+    };
+    hideAll(); show('appClinico'); await initClinico();
+    btn.disabled = false; btn.textContent = 'Entrar no sistema →';
+    return;
+  }
+
+  // Se não achou localmente, tenta no banco
+  try {
+    const { data, error } = await sb.from('auth_profissionais')
+      .select('*, profissionais(*)')
+      .eq('profissional_id', selUserId)
+      .eq('senha_hash', senha)
+      .single();
+    if (error || !data) throw new Error('Senha incorreta');
+    currentUser = data.profissionais;
+    currentUser.modulos = MODULOS_POR_PERFIL[currentUser.perfil] || [];
+    hideAll(); show('appClinico'); await initClinico();
+  } catch(e) {
+    err.textContent = 'Senha incorreta. Tente novamente.';
+    err.style.display = 'block';
+    document.getElementById('senhaProf').value = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar no sistema →';
+  }
+}
+
+async function logoutProf() {
+  currentUser = null; selUserId = null;
+  document.getElementById('senhaProf').value = '';
+  document.querySelectorAll('.uq').forEach(e => e.classList.remove('sel'));
+  hideAll(); show('entryScreen');
+}
+
+// ═══════════════════════════════════════════════
+// LOGIN FAMÍLIA
+// ═══════════════════════════════════════════════
+function fmtCPF(i){ let v=i.value.replace(/\D/g,''); if(v.length>3)v=v.slice(0,3)+'.'+v.slice(3); if(v.length>7)v=v.slice(0,7)+'.'+v.slice(7); if(v.length>11)v=v.slice(0,11)+'-'+v.slice(11); i.value=v.slice(0,14); }
+
+async function doLoginFam() {
+  const err = document.getElementById('errFam');
+  err.style.display = 'none';
+  const cpf = document.getElementById('cpfFam').value.trim();
+  const senha = document.getElementById('senhaFam').value;
+  const btn = document.getElementById('btnEntrarFam');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try {
+    const { data, error } = await sb.from('familias')
+      .select('*, pacientes(*, profissionais(*))')
+      .eq('cpf_responsavel', cpf)
+      .eq('ativo', true)
+      .single();
+    if (error || !data) throw new Error('CPF não encontrado');
+    // Verificar senha (campo simples por ora)
+    // Em produção: usar hash bcrypt
+    if (data.senha_acesso !== senha) throw new Error('Senha incorreta');
+    currentFamily = data;
+    hideAll(); show('appFamilia'); await initFamilia();
+  } catch(e) {
+    err.textContent = 'CPF ou senha incorretos.';
+    err.style.display = 'block';
+    document.getElementById('senhaFam').value = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Acessar Portal →';
+  }
+}
+
+async function logoutFam() {
+  currentFamily = null; confirmedSessions = {};
+  document.getElementById('cpfFam').value = '';
+  document.getElementById('senhaFam').value = '';
+  hideAll(); show('entryScreen');
+}
+
+// ═══════════════════════════════════════════════
+// INIT CLÍNICO
+// ═══════════════════════════════════════════════
+async function initClinico() {
+  const u = currentUser;
+  document.getElementById('sAv').textContent = u.emoji || '👤';
+  document.getElementById('sAv').style.background = (u.cor||'#999') + '33';
+  document.getElementById('sName').textContent = u.nome;
+  document.getElementById('sRole').textContent = u.cargo || '';
+  const bMap = {coordenadora:['b-coord','Coordenação'],supervisao:['b-sup','Supervisão'],clinico:['b-clin','Clínico']};
+  const [bc,bl] = bMap[u.perfil] || ['b-clin','Clínico'];
+  document.getElementById('accessBadge').className = 'access-badge ' + bc;
+  document.getElementById('accessBadge').textContent = '🔒 ' + bl;
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  buildSidebar(); buildQuickActions();
+  await Promise.all([loadPacientes(), loadAgenda(), loadEquipe(), loadDashboard()]);
+  if (u.modulos.includes('financeiro')) loadFinanceiro();
+  navigate('dashboard');
+}
+
+function buildSidebar() {
+  const grupos = [{label:'Principal',items:['dashboard','agenda']},{label:'Clínica',items:['pacientes','prontuarios']},{label:'Gestão',items:['financeiro','relatorios','equipe']}];
+  let html = '';
+  grupos.forEach(g => {
+    html += `<div class="nav-sec">${g.label}</div>`;
+    g.items.forEach(mod => {
+      const info = MODULO_INFO[mod]; const ok = currentUser.modulos.includes(mod);
+      html += `<div class="nav-item ${ok?'':'locked'}" id="nav_${mod}" onclick="${ok?`navigate('${mod}')`:`showToast('⛔ Acesso restrito.','err')`}"><span class="ni">${info.icon}</span>${info.label}${!ok?'<span style="margin-left:auto;font-size:.55rem;opacity:.5">🔒</span>':''}</div>`;
+    });
+  });
+  document.getElementById('sidebarNav').innerHTML = html;
+}
+
+function buildQuickActions() {
+  const acts = [{l:'➕ Novo Paciente',fn:"openModal('mPaciente')",always:true},{l:'📅 Agendar',fn:"openModal('mAgend')",always:true},{l:'📝 Registrar Evolução',fn:"openEvoModal()",mod:'prontuarios'},{l:'💰 Financeiro',fn:"openModal('mFin')",mod:'financeiro'}];
+  document.getElementById('quickActions').innerHTML = acts.filter(a=>a.always||currentUser.modulos.includes(a.mod)).map(a=>`<button class="btn btn-p" onclick="${a.fn}" style="justify-content:flex-start">${a.l}</button>`).join('');
+}
+
+function navigate(mod) {
+  if (!currentUser.modulos.includes(mod)) { showToast('⛔ Acesso restrito.','err'); return; }
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+mod)?.classList.add('active');
+  document.getElementById('nav_'+mod)?.classList.add('active');
+  document.getElementById('pageTitle').textContent = MODULO_INFO[mod]?.label || mod;
+  if (mod === 'prontuarios') loadPront();
+  if (mod === 'equipe') loadEquipe();
+}
+
+// ═══════════════════════════════════════════════
+// CARREGAR DADOS DO BANCO
+// ═══════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    // KPI pacientes
+    const { count: pac } = await sb.from('pacientes').select('*',{count:'exact',head:true}).eq('status','Ativo');
+    document.getElementById('kpiPac').textContent = pac || 0;
+    document.getElementById('kpiPacSub').textContent = 'pacientes ativos';
+
+    // KPI profissionais
+    const { count: prof } = await sb.from('profissionais').select('*',{count:'exact',head:true}).eq('ativo',true);
+    document.getElementById('kpiProf').textContent = prof || 0;
+
+    // KPI sessões hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    const { count: sess } = await sb.from('agenda').select('*',{count:'exact',head:true}).eq('data_sessao',hoje);
+    document.getElementById('kpiSess').textContent = sess || 0;
+    document.getElementById('kpiSessSub').textContent = 'sessões hoje';
+
+    // KPI financeiro (só coordenadora)
+    if (currentUser.modulos.includes('financeiro')) {
+      const mes = new Date().toISOString().slice(0,7);
+      const { data: fin } = await sb.from('financeiro').select('tipo,valor').gte('data_lancamento',mes+'-01');
+      const rec = (fin||[]).filter(f=>f.tipo==='Receita').reduce((s,f)=>s+parseFloat(f.valor),0);
+      document.getElementById('kpiRec').textContent = 'R$'+(rec/1000).toFixed(1)+'k';
+      document.getElementById('kpiRecSub').textContent = 'receita do mês';
+    } else {
+      document.getElementById('kpiRec').textContent = '—';
+      document.getElementById('kpiRecSub').textContent = 'restrito';
+    }
+
+    // Próximas sessões
+    const { data: proximas } = await sb.from('agenda')
+      .select('*, pacientes(nome), profissionais(nome)')
+      .gte('data_sessao', hoje)
+      .in('status',['Agendada','Confirmada'])
+      .order('data_sessao').order('hora_inicio').limit(5);
+
+    document.getElementById('dashSessoes').innerHTML = (proximas||[]).length
+      ? `<table><thead><tr><th>Data</th><th>Hora</th><th>Paciente</th><th>Profissional</th><th>Tipo</th></tr></thead><tbody>${(proximas||[]).map(s=>`<tr><td>${fmtData(s.data_sessao)}</td><td>${s.hora_inicio?.slice(0,5)||''}</td><td>${s.pacientes?.nome||'—'}</td><td><span style="font-size:.72rem;color:var(--cinza)">${s.profissionais?.nome||'—'}</span></td><td><span class="tag t-tea">${s.tipo||'Terapia'}</span></td></tr>`).join('')}</tbody></table>`
+      : '<div style="color:var(--cinza);font-size:.8rem;padding:10px">Nenhuma sessão agendada.</div>';
+
+    renderBarChart();
+  } catch(e) { console.error('Erro dashboard:', e); }
+}
+
+async function loadPacientes() {
+  try {
+    let query = sb.from('pacientes').select('*, profissionais(nome,especialidade)').order('nome');
+    // Filtro por perfil
+    if (currentUser.perfil === 'clinico') {
+      query = query.eq('profissional_id', currentUser.id);
+    } else if (currentUser.perfil === 'supervisao') {
+      const { data: sups } = await sb.from('supervisoes').select('supervisionado_especialidade').eq('supervisor_id', currentUser.id);
+      const esps = (sups||[]).map(s=>s.supervisionado_especialidade);
+      // buscar profissionais dessas especialidades
+      const { data: profs } = await sb.from('profissionais').select('id').in('especialidade', esps);
+      const ids = (profs||[]).map(p=>p.id);
+      if (ids.length) query = query.in('profissional_id', ids);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    allPacientes = data || [];
+    renderPacientesTable(allPacientes);
+    // Popular selects
+    const opts = allPacientes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+    ['aPac','ePac'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=opts; });
+  } catch(e) { console.error('Erro pacientes:', e); }
+}
+
+function calcIdade(nasc) {
+  if (!nasc) return '—';
+  const d=new Date(nasc),t=new Date();let a=t.getFullYear()-d.getFullYear();
+  if(t.getMonth()<d.getMonth()||(t.getMonth()===d.getMonth()&&t.getDate()<d.getDate()))a--;
+  return a+' anos';
+}
+
+function fmtData(d) {
+  if (!d) return '—';
+  const p = d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+function renderPacientesTable(pacs) {
+  const dc={TEA:'t-tea','TEA Nível 1':'t-tea','TEA Nível 2':'t-tea','TEA Nível 3':'t-tea',TDAH:'t-tdah','Paralisia Cerebral':'t-pc','T21':'t-t21','Trissomia 21':'t-t21'};
+  const sc={Ativo:'#2D6A4F',Inativo:'#6B7280',Alta:'#3B82F6'};
+  document.getElementById('tbodyPac').innerHTML = pacs.length
+    ? pacs.map(p=>`<tr>
+        <td><strong style="font-size:.7rem">#${p.id.slice(0,6)}</strong></td>
+        <td><div style="display:flex;align-items:center;gap:5px"><div style="width:25px;height:25px;border-radius:50%;background:${sc[p.status]||'#999'};display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.62rem;color:#fff">${p.nome.split(' ').map(n=>n[0]).slice(0,2).join('')}</div><strong>${p.nome}</strong></div></td>
+        <td>${calcIdade(p.data_nascimento)}</td>
+        <td><span class="tag ${dc[p.diagnostico]||'t-tea'}">${p.diagnostico||'—'}</span></td>
+        <td>${p.responsavel||'—'}</td>
+        <td style="font-size:.7rem;color:var(--cinza)">${p.profissionais?.nome||'—'}</td>
+        <td><span class="tag ${p.status==='Ativo'?'t-at':'t-in'}">${p.status||'—'}</span></td>
+        <td><button class="btn btn-s" style="padding:4px 8px;font-size:.66rem" onclick="goToPront('${p.id}','${p.nome}')">Prontuário</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:var(--cinza);padding:18px">Nenhum paciente encontrado.</td></tr>';
+}
+
+async function loadAgenda() {
+  try {
+    const hoje = new Date();
+    const seg = new Date(hoje); seg.setDate(hoje.getDate() - hoje.getDay() + 1);
+    const sab = new Date(seg); sab.setDate(seg.getDate() + 5);
+    let query = sb.from('agenda').select('*, pacientes(nome), profissionais(nome,cor)')
+      .gte('data_sessao', seg.toISOString().split('T')[0])
+      .lte('data_sessao', sab.toISOString().split('T')[0])
+      .order('data_sessao').order('hora_inicio');
+    const { data } = await query;
+    renderAgendaGrid(data||[], seg);
+  } catch(e) { console.error('Erro agenda:', e); }
+}
+
+function renderAgendaGrid(sessoes, seg) {
+  const dias = [];
+  for(let i=0;i<6;i++){ const d=new Date(seg); d.setDate(seg.getDate()+i); dias.push(d); }
+  const horas = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'];
+  const nomes = ['SEG','TER','QUA','QUI','SEX','SÁB'];
+  let html = `<div style="display:grid;grid-template-columns:52px repeat(6,1fr);gap:2px">
+    <div></div>${dias.map((d,i)=>`<div style="background:var(--verde);color:#fff;text-align:center;padding:7px 3px;border-radius:6px 6px 0 0;font-size:.63rem;font-weight:700">${nomes[i]}<br><small>${d.getDate()}/${d.getMonth()+1}</small></div>`).join('')}`;
+  horas.forEach(h => {
+    html += `<div style="display:flex;align-items:center;justify-content:center;font-size:.61rem;color:var(--cinza);padding:5px 0">${h}</div>`;
+    dias.forEach(d => {
+      const dStr = d.toISOString().split('T')[0];
+      const s = sessoes.find(x => x.data_sessao===dStr && x.hora_inicio?.startsWith(h.replace(':00',':')));
+      if(s) html += `<div style="background:${s.profissionais?.cor||'#52B788'};border-radius:5px;margin:1px;padding:4px 5px"><div style="font-size:.6rem;font-weight:700;color:#fff">${s.pacientes?.nome?.split(' ')[0]||'—'}</div><div style="font-size:.55rem;color:rgba(255,255,255,.8)">${s.especialidade||''}</div></div>`;
+      else html += `<div style="min-height:33px;background:#F0F7F1;border:1.5px dashed #C3E0CB;border-radius:5px;margin:1px;cursor:pointer" onclick="openModal('mAgend')"></div>`;
+    });
+  });
+  html += '</div>';
+  document.getElementById('agendaGrid').innerHTML = html;
+}
+
+async function loadEquipe() {
+  try {
+    const { data } = await sb.from('profissionais').select('*').eq('ativo',true).order('nome');
+    document.getElementById('equipeGrid').innerHTML = (data||[]).map(p=>`
+      <div class="pc">
+        <div class="pc-av" style="background:${p.cor||'#999'}22">${p.emoji||'👤'}</div>
+        <div class="pc-name">${p.nome}</div>
+        <div class="pc-spec">${p.cargo||''}</div>
+        <span class="tag t-at" style="margin-top:6px">Ativo</span>
+      </div>`).join('');
+    // Popular select de profissionais nos modais
+    const opts = (data||[]).map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+    ['aProf','pProf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=opts; });
+  } catch(e) { console.error('Erro equipe:', e); }
+}
+
+async function loadPront() {
+  let pacs = allPacientes.filter(p=>p.status==='Ativo');
+  const iMap = {coordenadora:{cls:'ai-coord',txt:'✅ Acesso completo a todos os prontuários'},supervisao:{cls:'ai-sup',txt:'🔍 Prontuários dos profissionais sob sua supervisão'},clinico:{cls:'ai-clin',txt:'🔒 Exibindo apenas seus pacientes'}};
+  // Auxiliar vê todos mas sem editar
+  if(currentUser.id==='auxiliar'){
+    return document.getElementById('prontContent').innerHTML=`<div class="access-info ai-clin">📋 Visualização — todos os prontuários (somente leitura)</div><div class="pront-layout"><div class="pront-list">${allPacientes.filter(p=>p.status==='Ativo').map(p=>\`<div class="pp" data-id="\${p.id}" onclick="loadEvolucoes('\${p.id}','\${p.nome}',this)"><div class="pp-name">\${p.nome}</div><div class="pp-diag">\${p.diagnostico||'—'} · \${calcIdade(p.data_nascimento)}</div><div class="pp-last">\${p.profissionais?.nome||'—'}</div></div>\`).join('')}</div><div><div id="prontNome" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;margin-bottom:12px"></div><div id="evoList"><div style="text-align:center;padding:40px;color:var(--cinza);font-size:.8rem">Selecione um paciente</div></div></div></div>`;
+  }
+  const {cls,txt} = iMap[currentUser.perfil] || {cls:'ai-clin',txt:''};
+  const listHtml = pacs.map(p=>`
+    <div class="pp" data-id="${p.id}" onclick="loadEvolucoes('${p.id}','${p.nome}',this)">
+      <div class="pp-name">${p.nome}</div>
+      <div class="pp-diag">${p.diagnostico||'—'} · ${calcIdade(p.data_nascimento)}</div>
+      <div class="pp-last">${p.profissionais?.nome||'—'}</div>
+    </div>`).join('') || '<div style="padding:16px;text-align:center;font-size:.76rem;color:var(--cinza)">Nenhum paciente vinculado</div>';
+  document.getElementById('prontContent').innerHTML = `
+    <div class="access-info ${cls}">${txt}</div>
+    <div class="pront-layout">
+      <div class="pront-list">${listHtml}</div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div id="prontNome" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700"></div>
+          <button class="btn btn-p" onclick="openEvoModal()">➕ Nova Evolução</button>
+        </div>
+        <div id="evoList"><div style="text-align:center;padding:40px;color:var(--cinza);font-size:.8rem">Selecione um paciente</div></div>
+      </div>
+    </div>`;
+}
+
+async function loadEvolucoes(pacId, pacNome, el) {
+  document.querySelectorAll('.pp').forEach(x=>x.classList.remove('sel')); el?.classList.add('sel');
+  document.getElementById('prontNome').textContent = pacNome;
+  document.getElementById('evoList').innerHTML = '<div style="color:var(--cinza);font-size:.78rem;padding:10px">Carregando...</div>';
+  try {
+    const { data } = await sb.from('evolucoes')
+      .select('*, profissionais(nome)')
+      .eq('paciente_id', pacId)
+      .order('data_sessao', {ascending:false});
+    document.getElementById('evoList').innerHTML = (data||[]).length
+      ? (data||[]).map(e=>`
+          <div class="evo-card">
+            <div class="evo-hd"><span class="evo-prof">${e.profissionais?.nome||'—'}</span> · <span style="font-size:.66rem;color:var(--cinza)">${e.tipo_sessao||''}</span><span class="evo-dt">${fmtData(e.data_sessao)}</span></div>
+            <div class="evo-txt">${e.relato||'—'}</div>
+            ${e.orientacoes_familia?`<div style="background:var(--menta);border-radius:7px;padding:8px 10px;font-size:.73rem;color:var(--verde2);margin-top:8px"><strong>Orientações:</strong> ${e.orientacoes_familia}</div>`:''}
+          </div>`).join('')
+      : '<div style="text-align:center;padding:28px;color:var(--cinza);font-size:.78rem">Nenhuma evolução registrada.</div>';
+  } catch(e) { console.error('Erro evoluções:', e); }
+}
+
+function goToPront(id, nome) {
+  if (!currentUser.modulos.includes('prontuarios')) { showToast('⛔ Sem acesso.','err'); return; }
+  navigate('prontuarios');
+  setTimeout(()=>{ const el=document.querySelector(`.pp[data-id="${id}"]`); if(el){el.click();} },200);
+}
+
+async function loadFinanceiro() {
+  if (!currentUser.modulos.includes('financeiro')) {
+    document.getElementById('finContent').innerHTML='<div class="denied"><div class="denied-icon">🔒</div><h2>Módulo Restrito</h2><p>Acesso exclusivo da Coordenação.</p></div>';
+    return;
+  }
+  try {
+    const mes = new Date().toISOString().slice(0,7);
+    const { data } = await sb.from('financeiro').select('*').order('data_lancamento',{ascending:false}).limit(20);
+    const rec = (data||[]).filter(f=>f.tipo==='Receita').reduce((s,f)=>s+parseFloat(f.valor||0),0);
+    const des = (data||[]).filter(f=>f.tipo==='Despesa').reduce((s,f)=>s+parseFloat(f.valor||0),0);
+    document.getElementById('finContent').innerHTML=`
+      <div class="fin-grid">
+        <div class="fc fc-rec"><div class="fc-lbl">Receita</div><div class="fc-val">R$ ${rec.toFixed(2)}</div></div>
+        <div class="fc fc-des"><div class="fc-lbl">Despesas</div><div class="fc-val">R$ ${des.toFixed(2)}</div></div>
+        <div class="fc fc-sal"><div class="fc-lbl">Saldo</div><div class="fc-val">R$ ${(rec-des).toFixed(2)}</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+          <div class="card-ttl" style="margin:0">📑 Lançamentos</div>
+          <button class="btn btn-p" onclick="openModal('mFin')" style="font-size:.72rem;padding:6px 11px">➕ Novo</button>
+        </div>
+        <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Status</th></tr></thead>
+        <tbody>${(data||[]).map(f=>`<tr>
+          <td>${fmtData(f.data_lancamento)}</td><td>${f.descricao}</td>
+          <td><span style="font-size:.68rem;color:var(--cinza)">${f.categoria||'—'}</span></td>
+          <td><span class="tag ${f.tipo==='Receita'?'t-at':'t-in'}">${f.tipo}</span></td>
+          <td><strong style="color:${f.tipo==='Receita'?'#16A34A':'#DC2626'}">R$ ${parseFloat(f.valor||0).toFixed(2)}</strong></td>
+          <td style="font-size:.7rem;color:var(--cinza)">${f.status||'—'}</td>
+        </tr>`).join('')}</tbody></table>
+      </div>`;
+  } catch(e) { console.error('Erro financeiro:', e); }
+}
+
+// ═══════════════════════════════════════════════
+// SALVAR DADOS
+// ═══════════════════════════════════════════════
+async function salvarPaciente() {
+  const obj = {
+    nome: document.getElementById('pNome').value,
+    data_nascimento: document.getElementById('pNasc').value || null,
+    diagnostico: document.getElementById('pDiag').value,
+    cid10: document.getElementById('pCid').value,
+    responsavel: document.getElementById('pResp').value,
+    telefone: document.getElementById('pTel').value,
+    email_responsavel: document.getElementById('pEmail').value,
+    profissional_id: document.getElementById('pProf').value || null,
+    observacoes: document.getElementById('pObs').value,
+  };
+  if (!obj.nome) { showToast('Preencha o nome do paciente.','warn'); return; }
+  try {
+    const { error } = await sb.from('pacientes').insert(obj);
+    if (error) throw error;
+    closeModal('mPaciente'); showToast('✅ Paciente cadastrado!');
+    await loadPacientes();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarAgendamento() {
+  const obj = {
+    paciente_id: document.getElementById('aPac').value,
+    profissional_id: document.getElementById('aProf').value,
+    data_sessao: document.getElementById('aData').value,
+    hora_inicio: document.getElementById('aHora').value,
+    duracao_min: parseInt(document.getElementById('aDur').value),
+    tipo: document.getElementById('aTipo').value,
+    observacoes: document.getElementById('aObs').value,
+    status: 'Agendada',
+  };
+  if (!obj.data_sessao || !obj.hora_inicio) { showToast('Preencha data e horário.','warn'); return; }
+  try {
+    const { error } = await sb.from('agenda').insert(obj);
+    if (error) throw error;
+    closeModal('mAgend'); showToast('✅ Agendamento criado!');
+    await loadAgenda();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarEvolucao() {
+  const obj = {
+    paciente_id: document.getElementById('ePac').value,
+    profissional_id: currentUser.id,
+    data_sessao: document.getElementById('eData').value,
+    tipo_sessao: document.getElementById('eTipo').value,
+    relato: document.getElementById('eRelato').value,
+    orientacoes_familia: document.getElementById('eOrient').value,
+    resumo_familia: document.getElementById('eResumo').value,
+  };
+  if (!obj.paciente_id || !obj.data_sessao) { showToast('Preencha paciente e data.','warn'); return; }
+  try {
+    const { error } = await sb.from('evolucoes').insert(obj);
+    if (error) throw error;
+    // Se há resumo para família, criar recado automático
+    if (obj.resumo_familia && obj.resumo_familia.trim()) {
+      await sb.from('recados').insert({
+        paciente_id: obj.paciente_id,
+        profissional_id: currentUser.id,
+        titulo: `Registro de sessão — ${obj.data_sessao}`,
+        mensagem: obj.resumo_familia,
+        tipo: 'normal',
+      });
+    }
+    closeModal('mEvo'); 
+    showToast('✅ Evolução registrada e disponibilizada para a família!');
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarFinanceiro() {
+  const obj = {
+    data_lancamento: document.getElementById('fData').value,
+    descricao: document.getElementById('fDesc').value,
+    tipo: document.getElementById('fTipo').value,
+    categoria: document.getElementById('fCat').value,
+    valor: parseFloat(document.getElementById('fValor').value),
+    forma_pagamento: document.getElementById('fPgto').value,
+    status: document.getElementById('fStatus').value,
+  };
+  if (!obj.descricao || !obj.valor || !obj.data_lancamento) { showToast('Preencha todos os campos.','warn'); return; }
+  try {
+    const { error } = await sb.from('financeiro').insert(obj);
+    if (error) throw error;
+    closeModal('mFin'); showToast('✅ Lançamento salvo!');
+    loadFinanceiro();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarProfissional() {
+  const obj = {
+    nome: document.getElementById('prNome').value,
+    especialidade: document.getElementById('prEsp').value,
+    email: document.getElementById('prEmail').value,
+    cargo: document.getElementById('prEsp').value,
+    perfil: 'clinico',
+    emoji: '👤',
+  };
+  if (!obj.nome || !obj.email) { showToast('Nome e e-mail obrigatórios.','warn'); return; }
+  try {
+    const { error } = await sb.from('profissionais').insert(obj);
+    if (error) throw error;
+    closeModal('mProf'); showToast('✅ Profissional cadastrado!');
+    await loadEquipe();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+function openEvoModal() {
+  const opts = allPacientes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  document.getElementById('ePac').innerHTML = opts;
+  document.getElementById('eProf').value = currentUser.nome;
+  document.getElementById('eData').value = new Date().toISOString().split('T')[0];
+  openModal('mEvo');
+}
+
+// ═══════════════════════════════════════════════
+// INIT FAMÍLIA
+// ═══════════════════════════════════════════════
+async function initFamilia() {
+  const f = currentFamily;
+  const pac = f.pacientes;
+  document.getElementById('famEmoji').textContent = '🌿';
+  document.getElementById('famNome').textContent = pac?.nome || 'Paciente';
+  document.getElementById('wTitle').textContent = `Olá, ${f.nome_responsavel?.split(' ')[0]}! 👋`;
+  document.getElementById('wDesc').textContent = `Acompanhe a evolução de ${pac?.nome} e as orientações da equipe.`;
+  document.getElementById('wEmoji').textContent = '🌟';
+  document.getElementById('msgPara').innerHTML = `<option>${pac?.profissionais?.nome||'Profissional Responsável'}</option><option>Coordenação — Vanessa Oliveira</option>`;
+  document.getElementById('contatosList').innerHTML = `<div style="font-size:.79rem;margin-bottom:8px"><strong>${pac?.profissionais?.nome||'—'}</strong><br><span style="color:var(--cinza);font-size:.7rem">${pac?.profissionais?.especialidade||''}</span></div><div style="font-size:.79rem"><strong>Coordenação · Vanessa Oliveira</strong><br><span style="color:var(--cinza);font-size:.7rem">(61) 99323-6099</span></div>`;
+  document.getElementById('avisosGerais').innerHTML = AVISOS.map(a=>`<div style="font-size:.73rem;color:var(--verde2);padding:4px 0;border-bottom:1px solid rgba(45,106,79,.1)">${a}</div>`).join('');
+  await Promise.all([loadFamAgenda(pac.id), loadFamAtividades(pac.id), loadFamEvolucoes(pac.id), loadFamRecados(pac.id), loadFamGaleria(pac.id)]);
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-inicio').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+}
+
+async function loadFamAgenda(pacId) {
+  try {
+    const hoje = new Date().toISOString().split('T')[0];
+    const { data } = await sb.from('agenda').select('*, profissionais(nome)').eq('paciente_id',pacId).gte('data_sessao',hoje).order('data_sessao').order('hora_inicio').limit(10);
+    const { data: passadas } = await sb.from('agenda').select('*, profissionais(nome)').eq('paciente_id',pacId).lt('data_sessao',hoje).order('data_sessao',{ascending:false}).limit(3);
+    const todas = [...(data||[]), ...(passadas||[])];
+    const proximas = (data||[]).slice(0,3);
+
+    // Dashboard próximas sessões
+    document.getElementById('proxList').innerHTML = proximas.map(s=>`
+      <div style="display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #F5F5F5">
+        <div style="background:#FDF0F3;border-radius:9px;padding:7px 8px;text-align:center;min-width:44px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--terra);line-height:1">${s.data_sessao?.split('-')[2]||'—'}</div>
+          <div style="font-size:.54rem;text-transform:uppercase;color:var(--terra);font-weight:700">${['','JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(s.data_sessao?.split('-')[1]||0)]}</div>
+        </div>
+        <div style="flex:1"><div style="font-weight:700;font-size:.82rem">${s.especialidade||'Sessão'}</div><div style="font-size:.7rem;color:var(--cinza)">${s.hora_inicio?.slice(0,5)||''} · ${s.profissionais?.nome||'—'}</div></div>
+        <span class="sp ${s.status==='Confirmada'||confirmedSessions[s.id]?'sp-c':s.status==='Realizada'?'sp-r':'sp-a'}">${confirmedSessions[s.id]?'Confirmada':s.status}</span>
+      </div>`).join('') || '<div style="color:var(--cinza);font-size:.78rem;padding:10px">Sem sessões agendadas.</div>';
+
+    if (proximas.length) {
+      document.getElementById('proxSessao').textContent = fmtData(proximas[0].data_sessao);
+      document.getElementById('proxSessaoSub').textContent = (proximas[0].hora_inicio?.slice(0,5)||'') + ' · ' + (proximas[0].especialidade||'');
+    }
+    const mes = new Date().getMonth()+1;
+    const sessMes = todas.filter(s=>parseInt(s.data_sessao?.split('-')[1]||0)===mes);
+    document.getElementById('sessMes').textContent = sessMes.length;
+    document.getElementById('sessMesSub').textContent = sessMes.filter(s=>s.status==='Realizada').length+' realizadas';
+
+    // Lista agenda completa
+    document.getElementById('famAgendaList').innerHTML = todas.map(s => {
+      const isFut = s.data_sessao >= new Date().toISOString().split('T')[0];
+      const conf = confirmedSessions[s.id] || s.confirmada_familia;
+      return `<div class="sess-card ${!isFut?'passada':''}">
+        <div class="sess-date-box">
+          <div class="sess-day">${s.data_sessao?.split('-')[2]||'—'}</div>
+          <div class="sess-month">${['','JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(s.data_sessao?.split('-')[1]||0)]}</div>
+        </div>
+        <div class="sess-info"><div class="sess-title">${s.especialidade||'Sessão'}</div><div class="sess-meta">⏰ ${s.hora_inicio?.slice(0,5)||''} · ${s.profissionais?.nome||'—'}</div></div>
+        <div class="sess-right">
+          <span class="sp ${conf&&isFut?'sp-c':s.status==='Realizada'?'sp-r':s.status==='Cancelada'?'sp-x':'sp-a'}">${conf&&isFut?'Confirmada':s.status||'Agendada'}</span>
+          ${isFut&&!conf?`<button class="btn-conf" onclick="confirmarSessao('${s.id}',this)">Confirmar</button>`:''}
+          ${conf&&isFut?`<button class="btn-conf done" disabled>✓ Confirmada</button>`:''}
+        </div>
+      </div>`;
+    }).join('') || '<div style="color:var(--cinza);font-size:.8rem;padding:20px">Sem sessões encontradas.</div>';
+  } catch(e) { console.error('Erro agenda família:', e); }
+}
+
+async function confirmarSessao(id, btn) {
+  try {
+    await sb.from('agenda').update({confirmada_familia:true,status:'Confirmada'}).eq('id',id);
+    confirmedSessions[id] = true;
+    if(btn){ btn.textContent='✓ Confirmada'; btn.className='btn-conf done'; btn.disabled=true; }
+    showToast('✅ Presença confirmada!','rosa');
+  } catch(e) { showToast('Erro ao confirmar.','err'); }
+}
+
+async function loadFamAtividades(pacId) {
+  try {
+    const { data } = await sb.from('atividades').select('*, profissionais(nome)').eq('paciente_id',pacId).eq('ativo',true).order('criado_em',{ascending:false});
+    document.getElementById('atvCount').textContent = (data||[]).length;
+    document.getElementById('famAtvList').innerHTML = (data||[]).length
+      ? (data||[]).map(a=>`
+          <div class="atv-card">
+            <div class="atv-hd"><div class="atv-title">${a.titulo}</div><span class="atv-tag">${a.urgente?'⚡ Urgente':'Esta semana'}</span></div>
+            <div style="font-size:.69rem;color:var(--cinza);margin-bottom:8px">👩‍⚕️ ${a.profissionais?.nome||'—'} ${a.data_limite?'· Até '+fmtData(a.data_limite):''}</div>
+            <div style="font-size:.8rem;line-height:1.68;color:#374151">${a.instrucoes||''}</div>
+            ${(a.passos||[]).length?`<ul class="atv-steps">${a.passos.map(p=>`<li>${p}</li>`).join('')}</ul>`:''}
+            ${a.observacao?`<div style="background:var(--areia);border-radius:7px;padding:8px 11px;font-size:.74rem;color:var(--cinza);margin-top:10px"><strong style="color:var(--escuro)">💡</strong> ${a.observacao}</div>`:''}
+            <div class="atv-check"><input type="checkbox" id="ck_${a.id}" onchange="if(this.checked)showToast('🌟 Atividade concluída!','rosa')"><label for="ck_${a.id}">Marcar como concluída</label></div>
+          </div>`).join('')
+      : '<div style="color:var(--cinza);font-size:.8rem;padding:20px;text-align:center">Nenhuma atividade no momento.</div>';
+  } catch(e) { console.error('Erro atividades:', e); }
+}
+
+async function loadFamEvolucoes(pacId) {
+  try {
+    const { data } = await sb.from('evolucoes').select('*, profissionais(nome)').eq('paciente_id',pacId).order('data_sessao',{ascending:false}).limit(10);
+    document.getElementById('famEvoList').innerHTML = (data||[]).length
+      ? (data||[]).map(e=>`
+          <div class="evo-card-f">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <span class="evo-esp">${e.profissionais?.nome||'—'}</span>
+              <span style="font-size:.68rem;color:var(--cinza)">📅 ${fmtData(e.data_sessao)}</span>
+            </div>
+            <div class="evo-title-f">${e.tipo_sessao||'Sessão Terapêutica'}</div>
+            <div class="evo-txt-f">${e.resumo_familia||e.relato||'—'}</div>
+            ${(e.conquistas||[]).length?`<div class="evo-conq"><div class="evo-c-title">Conquistas</div>${e.conquistas.map(c=>`<div class="evo-c-item">${c}</div>`).join('')}</div>`:''}
+          </div>`).join('')
+      : '<div style="color:var(--cinza);font-size:.8rem;padding:20px;text-align:center">Nenhuma evolução registrada.</div>';
+  } catch(e) { console.error('Erro evoluções família:', e); }
+}
+
+async function loadFamRecados(pacId) {
+  try {
+    const { data } = await sb.from('recados').select('*, profissionais(nome)').eq('paciente_id',pacId).order('criado_em',{ascending:false}).limit(10);
+    if ((data||[]).length) {
+      const ult = data[0];
+      document.getElementById('ultRecado').innerHTML = `<div class="rec-card ${ult.tipo==='urgente'?'urg':ult.tipo==='aviso'?'avi':''}"><div class="rc-hd"><div><div class="rc-de">${ult.profissionais?.nome||'—'}</div><div class="rc-title">${ult.titulo}</div></div><div class="rc-dt">${fmtData(ult.criado_em?.split('T')[0])}</div></div><div class="rc-txt">${ult.mensagem}</div></div>`;
+    }
+    document.getElementById('famRecList').innerHTML = (data||[]).map(r=>`
+      <div class="rec-card ${r.tipo==='urgente'?'urg':r.tipo==='aviso'?'avi':''}">
+        <div class="rc-hd"><div><div class="rc-de">${r.profissionais?.nome||'—'}</div><div class="rc-title">${r.titulo}</div></div><div class="rc-dt">${fmtData(r.criado_em?.split('T')[0])}</div></div>
+        <div class="rc-txt">${r.mensagem}</div>
+        <span style="padding:2px 7px;border-radius:20px;font-size:.58rem;font-weight:700;background:${r.lido?'#F3F4F6':'#DCFCE7'};color:${r.lido?'#6B7280':'#16A34A'};margin-top:6px;display:inline-block">${r.lido?'Lido':'Novo'}</span>
+      </div>`).join('') || '<div style="color:var(--cinza);font-size:.78rem;padding:14px">Nenhum recado.</div>';
+  } catch(e) { console.error('Erro recados:', e); }
+}
+
+async function loadFamGaleria(pacId) {
+  try {
+    const { data } = await sb.from('galeria').select('*, profissionais(nome)').eq('paciente_id',pacId).order('data_registro',{ascending:false});
+    const bgs = ['#D8F3DC','#EDE9FE','#DBEAFE','#FEF3C7','#FCE7F3','#FDF0F3'];
+    document.getElementById('famGalList').innerHTML = (data||[]).length
+      ? (data||[]).map((g,i)=>`
+          <div class="gal-item" onclick="openLightbox(${i},${JSON.stringify(data||[]).replace(/"/g,'&quot;')})">
+            <div class="gal-img" style="background:${bgs[i%6]}">${g.emoji||'📸'}</div>
+            <div class="gal-info"><div class="gal-title">${g.titulo}</div><div class="gal-dt">${fmtData(g.data_registro)}</div><span class="gal-tag">${g.especialidade||''}</span></div>
+          </div>`).join('')
+      : '<div style="color:var(--cinza);font-size:.78rem;padding:20px;text-align:center;grid-column:1/-1">Nenhum registro na galeria.</div>';
+  } catch(e) { console.error('Erro galeria:', e); }
+}
+
+async function enviarMsg() {
+  const txt = document.getElementById('msgTxt').value;
+  if (!txt.trim()) { showToast('Escreva uma mensagem.','warn'); return; }
+  try {
+    const { error } = await sb.from('mensagens').insert({
+      paciente_id: currentFamily.pacientes?.id,
+      familia_id: currentFamily.id,
+      mensagem: txt,
+      assunto: document.querySelector('#tab-mensagem select')?.value,
+    });
+    if (error) throw error;
+    document.getElementById('msgTxt').value='';
+    showToast('✅ Mensagem enviada! A equipe responderá em breve.','rosa');
+  } catch(e) { showToast('Erro ao enviar.','err'); }
+}
+
+// ═══════ UTILITÁRIOS ═══════
+function renderBarChart() {
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const vals=[12200,13100,14800,15500,18420,0,0,0,0,0,0,0];
+  const max=Math.max(...vals.filter(v=>v>0));
+  document.getElementById('barChart').innerHTML=meses.map((m,i)=>vals[i]?`<div class="bc"><div class="bv">R$${(vals[i]/1000).toFixed(1)}k</div><div class="bar" style="height:${(vals[i]/max)*86}px;background:${i===4?'var(--verde)':'var(--verde-c)'}"></div><div class="bl">${m}</div></div>`:`<div class="bc"><div class="bv" style="opacity:0">-</div><div class="bar" style="height:5px;background:#E8EEE9"></div><div class="bl">${m}</div></div>`).join('');
+}
+
+function filterTable(id,val) {
+  document.querySelectorAll(`#${id} tbody tr`).forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(val.toLowerCase())?'':'none';});
+}
+
+function openLightbox(i, galData) {
+  const g = Array.isArray(galData) ? galData[i] : null;
+  if (!g) return;
+  document.getElementById('lbImg').textContent=g.emoji||'📸';
+  document.getElementById('lbImg').style.background=['#D8F3DC','#EDE9FE','#DBEAFE','#FEF3C7','#FCE7F3','#FDF0F3'][i%6];
+  document.getElementById('lbTitle').textContent=g.titulo;
+  document.getElementById('lbDesc').textContent=g.descricao||'';
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
+
+function switchTab(id,el) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id)?.classList.add('active'); el.classList.add('active');
+}
+
+function openModal(id){ document.getElementById(id)?.classList.add('open'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function showToast(msg,type='') {
+  const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg;
+  t.className='toast '+(type==='err'?'err':type==='warn'?'warn':type==='rosa'?'rosa':'');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+// START
+init();
+</script>
+</body>
+</html>const USERS=[
+  // ── COORDENAÇÃO / ADMINISTRATIVO ─────────────────
+  {id:"vanessa",grupo:"Coordenação",nome:"Vanessa Oliveira",cargo:"Coordenadora · Psicopedagoga",perfil:"coordenadora",senha:"vanessa123",emoji:"🌿",cor:"#2D6A4F",especialidade:null,modulos:["dashboard","agenda","pacientes","prontuarios","financeiro","relatorios","equipe"]},
+  {id:"adminfin",grupo:"Coordenação",nome:"Administrativo / Financeiro",cargo:"Administrativo · Financeiro",perfil:"coordenadora",senha:"admin123",emoji:"💼",cor:"#2D6A4F",especialidade:"Administrativo",modulos:["dashboard","agenda","pacientes","financeiro","relatorios","equipe"]},
+  {id:"auxiliar",grupo:"Coordenação",nome:"Auxiliar Administrativo",cargo:"Auxiliar Administrativo",perfil:"clinico",senha:"auxiliar123",emoji:"📋",cor:"#6B7280",especialidade:"Auxiliar Admin",modulos:["dashboard","agenda","pacientes","prontuarios"]},
+
+  // ── FONOAUDIOLOGIA ────────────────────────────────
+  {id:"fono1",grupo:"Fonoaudiologia",nome:"Fonoaudiologia 1",cargo:"Fonoaudióloga",perfil:"clinico",senha:"fono1",emoji:"🗣️",cor:"#059669",especialidade:"Fonoaudiologia 1",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"fono2",grupo:"Fonoaudiologia",nome:"Fonoaudiologia 2",cargo:"Fonoaudióloga",perfil:"clinico",senha:"fono2",emoji:"🗣️",cor:"#059669",especialidade:"Fonoaudiologia 2",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"fonosup",grupo:"Fonoaudiologia",nome:"Fonoaudiologia Supervisão",cargo:"Fonoaudióloga Supervisora",perfil:"supervisao",senha:"fonosup",emoji:"🔍",cor:"#065F46",especialidade:["Fonoaudiologia 1","Fonoaudiologia 2"],modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+
+  // ── PSICOLOGIA ────────────────────────────────────
+  {id:"psico1",grupo:"Psicologia",nome:"Psicologia 1",cargo:"Psicóloga",perfil:"clinico",senha:"psico1",emoji:"🧠",cor:"#7C3AED",especialidade:"Psicologia 1",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"psico2",grupo:"Psicologia",nome:"Psicologia 2",cargo:"Psicóloga",perfil:"clinico",senha:"psico2",emoji:"🧠",cor:"#7C3AED",especialidade:"Psicologia 2",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"psico3",grupo:"Psicologia",nome:"Psicologia 3",cargo:"Psicóloga",perfil:"clinico",senha:"psico3",emoji:"🧠",cor:"#7C3AED",especialidade:"Psicologia 3",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"psicosup",grupo:"Psicologia",nome:"Psicologia Supervisão",cargo:"Psicóloga Supervisora",perfil:"supervisao",senha:"psicosup",emoji:"🔍",cor:"#6D28D9",especialidade:["Psicologia 1","Psicologia 2","Psicologia 3"],modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+
+  // ── ACOMPANHAMENTO PEDAGÓGICO ─────────────────────
+  {id:"pedago",grupo:"Pedagógico",nome:"Acompanhamento Pedagógico",cargo:"Pedagoga",perfil:"clinico",senha:"pedago1",emoji:"📚",cor:"#D97706",especialidade:"Acompanhamento Pedagógico",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"pedagosup",grupo:"Pedagógico",nome:"Ac. Pedagógico Supervisão",cargo:"Pedagoga Supervisora",perfil:"supervisao",senha:"pedagosup",emoji:"🔍",cor:"#92400E",especialidade:["Acompanhamento Pedagógico"],modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+
+  // ── PSICOMOTRICIDADE ──────────────────────────────
+  {id:"psicomotri",grupo:"Psicomotricidade",nome:"Psicomotricidade",cargo:"Psicomotricista",perfil:"clinico",senha:"psicomotri1",emoji:"🤸",cor:"#0891B2",especialidade:"Psicomotricidade",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+
+  // ── PSICOPEDAGOGIA ────────────────────────────────
+  {id:"psicoped1",grupo:"Psicopedagogia",nome:"Psicopedagogia 1",cargo:"Psicopedagoga",perfil:"clinico",senha:"psicoped1",emoji:"🎯",cor:"#B5838D",especialidade:"Psicopedagogia 1",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"psicoped2",grupo:"Psicopedagogia",nome:"Psicopedagogia 2",cargo:"Psicopedagoga",perfil:"clinico",senha:"psicoped2",emoji:"🎯",cor:"#B5838D",especialidade:"Psicopedagogia 2",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"psicoped3",grupo:"Psicopedagogia",nome:"Psicopedagogia 3",cargo:"Psicopedagoga",perfil:"clinico",senha:"psicoped3",emoji:"🎯",cor:"#B5838D",especialidade:"Psicopedagogia 3",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+  {id:"psicopedsup",grupo:"Psicopedagogia",nome:"Psicopedagogia Supervisão",cargo:"Psicopedagoga Supervisora",perfil:"supervisao",senha:"psicopedsup",emoji:"🔍",cor:"#831843",especialidade:["Psicopedagogia 1","Psicopedagogia 2","Psicopedagogia 3"],modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+
+  // ── MUSICOTERAPIA ─────────────────────────────────
+  {id:"musico",grupo:"Musicoterapia",nome:"Musicoterapia",cargo:"Musicoterapeuta",perfil:"clinico",senha:"musico1",emoji:"🎵",cor:"#DB2777",especialidade:"Musicoterapia",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+
+  // ── NUTRIÇÃO ──────────────────────────────────────
+  {id:"nutri",grupo:"Nutrição",nome:"Nutrição",cargo:"Nutricionista",perfil:"clinico",senha:"nutri1",emoji:"🥗",cor:"#16A34A",especialidade:"Nutrição",modulos:["dashboard","agenda","pacientes","prontuarios","relatorios"]},
+];
+
+const MODULO_INFO!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espaço Montessoriano — Sistema Integrado</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#2D6A4F;--verde2:#1B4332;--verde-c:#52B788;--menta:#D8F3DC;
+  --terra:#B5838D;--areia:#F5ECD7;--creme:#FDFAF4;
+  --azul:#3B82F6;--roxo:#7C3AED;--amarelo:#F59E0B;--vermelho:#EF4444;
+  --cinza:#6B7280;--escuro:#111827;
+  --sombra:0 4px 28px rgba(45,106,79,.10);--sombra2:0 20px 60px rgba(0,0,0,.20);--r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--creme);color:var(--escuro);min-height:100vh;}
+
+/* LOADING */
+#loadingScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1B4332,#2D6A4F);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9999;}
+.loading-leaf{font-size:3rem;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.7}}
+.loading-text{color:rgba(255,255,255,.7);font-size:.85rem;margin-top:16px;letter-spacing:1px;}
+
+/* ENTRY */
+#entryScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(150deg,#1B4332 0%,#2D6A4F 50%,#40916C 100%);position:relative;overflow:hidden;}
+#entryScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(82,183,136,.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,rgba(181,131,141,.15) 0%,transparent 55%);}
+.entry-brand{text-align:center;margin-bottom:44px;position:relative;z-index:1;animation:fadeUp .5s ease;}
+.entry-leaf{font-size:3.2rem;display:block;margin-bottom:12px;}
+.entry-title{font-family:'Cormorant Garamond',serif;color:#fff;font-size:2rem;font-weight:700;}
+.entry-sub{color:rgba(255,255,255,.5);font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;margin-top:6px;}
+.entry-cards{display:flex;gap:20px;position:relative;z-index:1;animation:fadeUp .6s ease;}
+.entry-card{background:rgba(255,255,255,.97);border-radius:22px;padding:36px 32px;width:240px;text-align:center;cursor:pointer;transition:all .22s;box-shadow:var(--sombra2);border:2px solid transparent;}
+.entry-card:hover{transform:translateY(-8px);border-color:var(--verde-c);}
+.entry-card.fam:hover{border-color:var(--terra);}
+.ec-icon{font-size:3.2rem;display:block;margin-bottom:14px;}
+.ec-title{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:700;margin-bottom:6px;}
+.ec-desc{font-size:.75rem;color:var(--cinza);line-height:1.6;}
+.ec-btn{display:inline-block;margin-top:18px;background:var(--verde);color:#fff;border-radius:10px;padding:9px 20px;font-size:.8rem;font-weight:700;}
+.entry-card.fam .ec-btn{background:var(--terra);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOGIN PROFISSIONAL */
+#loginProfScreen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1B4332 0%,#2D6A4F 55%,#40916C 100%);}
+.lp-wrap{display:flex;border-radius:24px;overflow:hidden;box-shadow:var(--sombra2);animation:fadeUp .5s ease;max-height:92vh;}
+.lp-left{width:260px;background:var(--verde2);padding:36px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.lp-leaf{font-size:2.5rem;margin-bottom:12px;}
+.lp-brand{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.4rem;font-weight:700;text-align:center;line-height:1.2;}
+.lp-sub{color:rgba(255,255,255,.4);font-size:.63rem;letter-spacing:2px;text-transform:uppercase;margin-top:5px;text-align:center;}
+.lp-divider{width:36px;height:2px;background:var(--verde-c);border-radius:2px;margin:18px auto;}
+.lp-info{color:rgba(255,255,255,.4);font-size:.7rem;text-align:center;line-height:1.7;}
+.lp-right{width:390px;background:#fff;padding:30px;overflow-y:auto;}
+.lp-back{display:inline-flex;align-items:center;gap:6px;font-size:.73rem;color:var(--cinza);cursor:pointer;margin-bottom:14px;font-weight:600;}
+.lp-back:hover{color:var(--verde);}
+.lp-right h2{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;margin-bottom:4px;}
+.lp-right p{color:var(--cinza);font-size:.76rem;margin-bottom:16px;}
+.err-box{background:#FEE2E2;color:#DC2626;border-radius:8px;padding:9px 13px;font-size:.75rem;font-weight:600;margin-bottom:11px;display:none;}
+.prof-group{margin-bottom:14px;}
+.pg-label{font-size:.6rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:5px;}
+.pg-items{display:flex;flex-direction:column;gap:3px;}
+.uq{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1.5px solid #E8EEEA;cursor:pointer;transition:all .13s;background:#FAFDFB;}
+.uq:hover{border-color:var(--verde-c);background:var(--menta);}
+.uq.sel{border-color:var(--verde);background:var(--menta);}
+.uq-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;}
+.uq-name{font-size:.77rem;font-weight:600;}
+.uq-role{font-size:.61rem;color:var(--cinza);}
+.uq-badge{margin-left:auto;font-size:.54rem;padding:2px 6px;border-radius:20px;font-weight:700;text-transform:uppercase;flex-shrink:0;}
+.pw-lbl{display:block;font-size:.68rem;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;margin-top:8px;}
+.pw-inp{width:100%;padding:10px 12px;border:1.5px solid #E0E7E4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;transition:border .15s;margin-bottom:11px;}
+.pw-inp:focus{border-color:var(--verde-c);}
+.btn-entrar{width:100%;padding:12px;background:linear-gradient(135deg,var(--verde),var(--verde-c));color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.btn-entrar:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(45,106,79,.3);}
+.btn-entrar:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* LOGIN FAMÍLIA */
+#loginFamScreen{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(145deg,#1B4332 0%,#2D6A4F 45%,#52B788 100%);}
+.lf-card{background:#fff;border-radius:26px;width:400px;max-width:93vw;box-shadow:var(--sombra2);animation:fadeUp .5s ease;overflow:hidden;}
+.lf-top{background:linear-gradient(135deg,var(--terra),#C9ABB1);padding:30px;text-align:center;}
+.lf-leaf{font-size:2.3rem;display:block;margin-bottom:9px;}
+.lf-title{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.55rem;font-weight:700;}
+.lf-sub{color:rgba(255,255,255,.55);font-size:.66rem;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.lf-body{padding:24px 30px 28px;}
+.lf-back{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:var(--cinza);cursor:pointer;margin-bottom:14px;font-weight:600;}
+.lf-lbl{display:block;font-size:.68rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px;}
+.lf-inp{width:100%;padding:11px 13px;border:1.5px solid #E0E7E4;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;transition:border .16s;margin-bottom:12px;}
+.lf-inp:focus{border-color:var(--terra);}
+.btn-fam{width:100%;padding:12px;background:linear-gradient(135deg,var(--terra),#C9ABB1);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.btn-fam:hover{transform:translateY(-2px);}
+.btn-fam:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.lf-hint{text-align:center;font-size:.68rem;color:var(--cinza);margin-top:11px;font-style:italic;}
+
+/* APP CLÍNICO */
+#appClinico{display:none;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:238px;background:linear-gradient(180deg,var(--verde2) 0%,#162E22 100%);display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 32px rgba(0,0,0,.18);}
+.logo-area{padding:20px 17px 13px;border-bottom:1px solid rgba(255,255,255,.1);}
+.logo-leaf{font-size:1.4rem;}
+.logo-name{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1rem;font-weight:700;line-height:1.2;margin-top:3px;}
+.logo-sub{color:rgba(255,255,255,.32);font-size:.57rem;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.nav{padding:10px 0;flex:1;overflow-y:auto;}
+.nav-sec{padding:7px 15px 2px;color:rgba(255,255,255,.24);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 17px;cursor:pointer;color:rgba(255,255,255,.6);font-size:.8rem;font-weight:500;transition:all .14s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;border-left-color:var(--verde-c);}
+.nav-item.locked{opacity:.26;cursor:not-allowed;}
+.ni{font-size:.88rem;width:15px;text-align:center;}
+.sidebar-foot{padding:11px 15px;border-top:1px solid rgba(255,255,255,.08);}
+.s-user{display:flex;align-items:center;gap:8px;}
+.s-av{width:29px;height:29px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;}
+.s-name{color:#fff;font-size:.76rem;font-weight:600;}
+.s-role{color:rgba(255,255,255,.34);font-size:.59rem;}
+.btn-logout{margin-top:7px;width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.48);border-radius:7px;padding:6px;font-size:.68rem;cursor:pointer;transition:all .14s;font-family:'DM Sans',sans-serif;}
+.btn-logout:hover{background:rgba(239,68,68,.16);color:#FCA5A5;}
+.main{margin-left:238px;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid #E8EEE9;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 7px rgba(0,0,0,.04);}
+.page-ttl{font-family:'Cormorant Garamond',serif;font-size:1.28rem;font-weight:700;}
+.topbar-r{display:flex;align-items:center;gap:10px;}
+.topbar-date{color:var(--cinza);font-size:.72rem;}
+.access-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.64rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.b-coord{background:#DCFCE7;color:#15803D;}.b-sup{background:#EDE9FE;color:#6D28D9;}.b-clin{background:#DBEAFE;color:#1D4ED8;}
+.content{padding:20px 24px;}
+.section{display:none;animation:fadeIn .2s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* COMPONENTES */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:#fff;border-radius:var(--r);padding:16px 14px;box-shadow:var(--sombra);border-top:4px solid var(--verde-c);transition:transform .16s;}
+.kpi:hover{transform:translateY(-3px);}
+.kpi.k2{border-top-color:var(--terra)}.kpi.k3{border-top-color:#D4A853}.kpi.k4{border-top-color:var(--azul)}
+.kpi-lbl{font-size:.62rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px;}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:700;line-height:1;}
+.kpi-sub{font-size:.67rem;color:var(--cinza);margin-top:3px;}
+.card{background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--sombra);}
+.card-ttl{font-family:'Cormorant Garamond',serif;font-size:.96rem;font-weight:700;margin-bottom:11px;}
+.dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-bottom:15px;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:600;transition:all .15s;}
+.btn-p{background:var(--verde);color:#fff;}.btn-p:hover{background:var(--verde2);}
+.btn-s{background:var(--menta);color:var(--verde);}.btn-s:hover{background:#B7E4C7;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--areia);padding:8px 10px;text-align:left;font-size:.64rem;text-transform:uppercase;letter-spacing:.7px;color:var(--cinza);font-weight:600;}
+tbody tr{border-bottom:1px solid #F0F0F0;transition:background .1s;}
+tbody tr:hover{background:#F8FBF8;}
+td{padding:9px 10px;font-size:.77rem;vertical-align:middle;}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:.6rem;font-weight:700;text-transform:uppercase;}
+.t-tea{background:#DCFCE7;color:#16A34A}.t-tdah{background:#DBEAFE;color:#1D4ED8}.t-pc{background:#FEF3C7;color:#B45309}.t-t21{background:#FAE8FF;color:#7C3AED}
+.t-at{background:#DCFCE7;color:#16A34A}.t-in{background:#F3F4F6;color:#6B7280}
+.tbl-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:9px;}
+.search-box{display:flex;align-items:center;gap:5px;background:#fff;border:1.5px solid #DCE8DD;border-radius:8px;padding:6px 10px;flex:1;max-width:260px;}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:.77rem;width:100%;background:transparent;}
+.pront-layout{display:grid;grid-template-columns:250px 1fr;gap:12px;}
+.pront-list{background:#fff;border-radius:var(--r);box-shadow:var(--sombra);overflow:hidden;max-height:70vh;overflow-y:auto;}
+.pp{padding:11px 13px;border-bottom:1px solid #F0F0F0;cursor:pointer;transition:background .1s;}
+.pp:hover{background:#F8FBF8;}
+.pp.sel{background:var(--menta);border-left:3px solid var(--verde);}
+.pp-name{font-weight:600;font-size:.79rem;}
+.pp-diag{font-size:.65rem;color:var(--cinza);}
+.pp-last{font-size:.61rem;color:var(--verde-c);margin-top:1px;}
+.evo-card{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--sombra);border-left:4px solid var(--verde-c);margin-bottom:9px;}
+.evo-hd{display:flex;justify-content:space-between;margin-bottom:6px;}
+.evo-prof{font-size:.68rem;font-weight:700;color:var(--verde);}
+.evo-dt{font-size:.66rem;color:var(--cinza);}
+.evo-txt{font-size:.77rem;line-height:1.62;color:#374151;}
+.fin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px;}
+.fc{border-radius:var(--r);padding:14px;}
+.fc-rec{background:linear-gradient(135deg,var(--verde),var(--verde-c));color:#fff;}
+.fc-des{background:linear-gradient(135deg,#B5838D,#C9ABB1);color:#fff;}
+.fc-sal{background:linear-gradient(135deg,var(--azul),#74B0E8);color:#fff;}
+.fc-lbl{font-size:.62rem;opacity:.8;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.fc-val{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:700;}
+.eq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.pc{background:#fff;border-radius:var(--r);padding:18px;text-align:center;box-shadow:var(--sombra);transition:transform .16s;}
+.pc:hover{transform:translateY(-3px);}
+.pc-av{width:54px;height:54px;border-radius:50%;margin:0 auto 9px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+.pc-name{font-family:'Cormorant Garamond',serif;font-size:.92rem;font-weight:700;margin-bottom:2px;}
+.pc-spec{font-size:.68rem;color:var(--cinza);}
+.rr{display:flex;align-items:center;gap:7px;margin:5px 0;}
+.rr-lbl{font-size:.7rem;min-width:120px;font-weight:500;}
+.rr-fill{height:17px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:.6rem;color:#fff;font-weight:700;}
+.access-info{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:.73rem;font-weight:600;margin-bottom:12px;}
+.ai-coord{background:#DCFCE7;color:#15803D;}.ai-sup{background:#EDE9FE;color:#6D28D9;}.ai-clin{background:#DBEAFE;color:#1D4ED8;}
+.denied{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center;}
+.denied-icon{font-size:2.8rem;margin-bottom:12px;}
+.denied h2{font-family:'Cormorant Garamond',serif;font-size:1.35rem;margin-bottom:5px;}
+.denied p{color:var(--cinza);font-size:.81rem;max-width:300px;line-height:1.6;}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:96px;margin-top:10px;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bar{width:100%;border-radius:4px 4px 0 0;}
+.bl{font-size:.55rem;color:var(--cinza);}
+.bv{font-size:.55rem;font-weight:700;color:var(--verde);}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px;}
+.dg{background:#22C55E;}.dy{background:#F59E0B;}.dr{background:#EF4444;}
+
+/* APP FAMÍLIA */
+#appFamilia{display:none;min-height:100vh;}
+.fam-header{background:linear-gradient(135deg,var(--verde2),var(--terra));padding:0 24px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 18px rgba(0,0,0,.14);}
+.fh-brand{display:flex;align-items:center;gap:9px;}
+.fh-name{font-family:'Cormorant Garamond',serif;color:#fff;font-size:1rem;font-weight:700;}
+.fh-right{display:flex;align-items:center;gap:11px;}
+.pat-chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.23);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:6px;}
+.pat-chip span{color:#fff;font-size:.78rem;font-weight:600;}
+.btn-sair{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.78);border-radius:8px;padding:6px 12px;font-size:.71rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-sair:hover{background:rgba(239,68,68,.18);color:#FCA5A5;}
+.tabs-bar{background:#fff;border-bottom:1px solid #E8EEE9;padding:0 24px;display:flex;gap:2px;overflow-x:auto;}
+.tab{padding:13px 15px;font-size:.79rem;font-weight:600;color:var(--cinza);cursor:pointer;border-bottom:3px solid transparent;transition:all .14s;white-space:nowrap;}
+.tab:hover{color:var(--terra);}
+.tab.active{color:var(--terra);border-bottom-color:var(--terra);}
+.fam-content{padding:22px;max-width:920px;margin:0 auto;}
+.tab-section{display:none;animation:fadeIn .2s ease;}
+.tab-section.active{display:block;}
+.welcome-banner{background:linear-gradient(135deg,var(--verde2) 0%,var(--terra) 100%);border-radius:var(--r);padding:24px 26px;color:#fff;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 7px 24px rgba(45,106,79,.2);}
+.wb-text h2{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;margin-bottom:4px;}
+.wb-text p{font-size:.77rem;opacity:.8;line-height:1.55;}
+.wb-emoji{font-size:2.8rem;}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.sum-card{background:#fff;border-radius:var(--r);padding:15px 13px;box-shadow:var(--sombra);border-top:4px solid var(--terra);text-align:center;}
+.sum-card.s2{border-top-color:var(--verde);}.sum-card.s3{border-top-color:var(--azul);}
+.sum-lbl{font-size:.63rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px;}
+.sum-val{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;line-height:1;}
+.sum-sub{font-size:.66rem;color:var(--cinza);margin-top:3px;}
+.sess-card{background:#fff;border-radius:var(--r);padding:15px 17px;box-shadow:var(--sombra);display:flex;align-items:center;gap:14px;margin-bottom:9px;border-left:5px solid var(--terra);transition:transform .15s;}
+.sess-card:hover{transform:translateX(3px);}
+.sess-card.passada{border-left-color:#E5E7EB;opacity:.73;}
+.sess-date-box{min-width:50px;text-align:center;background:#FDF0F3;border-radius:10px;padding:8px 6px;}
+.sess-day{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:700;color:var(--terra);line-height:1;}
+.sess-month{font-size:.56rem;text-transform:uppercase;color:var(--terra);font-weight:700;letter-spacing:1px;}
+.sess-info{flex:1;}
+.sess-title{font-weight:700;font-size:.84rem;margin-bottom:2px;}
+.sess-meta{font-size:.7rem;color:var(--cinza);}
+.sess-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.sp{padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:700;text-transform:uppercase;}
+.sp-c{background:#DCFCE7;color:#16A34A;}.sp-a{background:#FEF3C7;color:#B45309;}.sp-r{background:#F3F4F6;color:#6B7280;}.sp-x{background:#FEE2E2;color:#DC2626;}
+.btn-conf{background:var(--terra);color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .14s;}
+.btn-conf:hover{background:#9A6470;}
+.btn-conf.done{background:#DCFCE7;color:#16A34A;cursor:default;}
+.atv-card{background:#fff;border-radius:var(--r);padding:17px;box-shadow:var(--sombra);margin-bottom:10px;}
+.atv-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.atv-title{font-family:'Cormorant Garamond',serif;font-size:.97rem;font-weight:700;}
+.atv-tag{padding:2px 8px;border-radius:20px;font-size:.61rem;font-weight:700;text-transform:uppercase;background:#FDF0F3;color:var(--terra);}
+.atv-steps{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;}
+.atv-steps li{display:flex;align-items:flex-start;gap:6px;font-size:.79rem;color:#374151;}
+.atv-steps li::before{content:'✅';flex-shrink:0;}
+.atv-check{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #F0F0F0;}
+.atv-check input{width:15px;height:15px;accent-color:var(--terra);cursor:pointer;}
+.atv-check label{font-size:.74rem;color:var(--cinza);cursor:pointer;}
+.rec-card{background:#fff;border-radius:var(--r);padding:15px;box-shadow:var(--sombra);border-left:4px solid var(--terra);margin-bottom:9px;}
+.rec-card.urg{border-left-color:var(--amarelo);}.rec-card.avi{border-left-color:var(--azul);}
+.rc-hd{display:flex;justify-content:space-between;margin-bottom:6px;}
+.rc-de{font-size:.69rem;font-weight:700;color:var(--terra);}
+.rc-dt{font-size:.64rem;color:var(--cinza);}
+.rc-title{font-weight:700;font-size:.83rem;margin-bottom:3px;}
+.rc-txt{font-size:.77rem;line-height:1.6;color:#374151;}
+.evo-card-f{background:#fff;border-radius:var(--r);padding:17px;box-shadow:var(--sombra);border-left:5px solid var(--terra);margin-bottom:10px;}
+.evo-esp{font-size:.68rem;font-weight:700;color:var(--terra);background:#FDF0F3;padding:2px 8px;border-radius:20px;}
+.evo-title-f{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:700;margin:7px 0 5px;}
+.evo-txt-f{font-size:.79rem;line-height:1.65;color:#374151;}
+.evo-conq{margin-top:10px;background:#FDF0F3;border-radius:8px;padding:10px 12px;}
+.evo-c-title{font-size:.65rem;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.evo-c-item{font-size:.77rem;color:#7A3040;display:flex;gap:5px;margin-bottom:3px;}
+.evo-c-item::before{content:'🌟';flex-shrink:0;}
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.gal-item{border-radius:10px;overflow:hidden;box-shadow:var(--sombra);cursor:pointer;transition:transform .15s;background:#fff;}
+.gal-item:hover{transform:scale(1.03);}
+.gal-img{width:100%;height:130px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;}
+.gal-info{padding:8px 10px;}
+.gal-title{font-size:.73rem;font-weight:700;}
+.gal-dt{font-size:.63rem;color:var(--cinza);margin-top:1px;}
+.gal-tag{font-size:.58rem;font-weight:700;color:var(--terra);background:#FDF0F3;padding:2px 6px;border-radius:20px;display:inline-block;margin-top:3px;}
+.msg-box{background:#fff;border-radius:var(--r);padding:18px;box-shadow:var(--sombra);}
+.msg-box h3{font-family:'Cormorant Garamond',serif;font-size:.97rem;font-weight:700;margin-bottom:11px;}
+.msg-fg{margin-bottom:10px;}
+.msg-fg label{display:block;font-size:.67rem;font-weight:700;color:var(--cinza);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;}
+.msg-fg select,.msg-fg textarea{width:100%;padding:9px 11px;border:1.5px solid #DCE8DD;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;transition:border .15s;}
+.msg-fg select:focus,.msg-fg textarea:focus{border-color:var(--terra);}
+.btn-send{background:var(--terra);color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-send:hover{background:#9A6470;}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:300;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lb-inner{background:#fff;border-radius:16px;max-width:500px;width:90%;overflow:hidden;}
+.lb-img{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:5rem;}
+.lb-body{padding:16px 20px 20px;}
+.lb-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;margin-bottom:3px;}
+.lb-desc{font-size:.79rem;color:#374151;line-height:1.6;margin-bottom:7px;}
+.lb-close{display:block;margin:0 auto;background:var(--cinza);color:#fff;border:none;border-radius:7px;padding:6px 16px;font-size:.76rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.44);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:470px;width:90%;box-shadow:var(--sombra2);animation:fadeUp .24s ease;max-height:88vh;overflow-y:auto;}
+.modal-ttl{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-weight:700;margin-bottom:14px;}
+.fg{margin-bottom:10px;}
+.fg label{display:block;font-size:.67rem;font-weight:600;color:var(--cinza);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 11px;border:1.5px solid #DCE8DD;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.81rem;outline:none;transition:border .14s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--verde-c);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.modal-foot{display:flex;justify-content:flex-end;gap:7px;margin-top:14px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--verde);color:#fff;padding:11px 17px;border-radius:10px;font-size:.8rem;font-weight:600;box-shadow:0 7px 24px rgba(45,106,79,.33);transform:translateY(70px);opacity:0;transition:all .26s;z-index:400;display:flex;align-items:center;gap:7px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{background:#EF4444;}.toast.warn{background:#F59E0B;}.toast.rosa{background:var(--terra);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:#C3E0CB;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loading-leaf">🌿</div>
+  <div class="loading-text">Conectando ao sistema...</div>
+</div>
+
+<!-- ENTRADA -->
+<div id="entryScreen">
+  <div class="entry-brand">
+    <span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span>
+    <div class="entry-sub" style="color:rgba(255,255,255,.65);font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;max-width:340px;text-align:center;line-height:1.6">Desenvolvimento infantil com olhar integrado:<br>educação, saúde e neurodesenvolvimento</div>
+  </div>
+  <div class="entry-cards">
+    <div class="entry-card" onclick="showLoginProf()">
+      <span class="ec-icon">👩‍⚕️</span>
+      <div class="ec-title">Sou Profissional</div>
+      <div class="ec-desc">Acesso ao sistema clínico, prontuários, agenda e gestão.</div>
+      <div class="ec-btn">Acessar sistema →</div>
+    </div>
+    <div class="entry-card fam" onclick="showLoginFam()">
+      <span class="ec-icon">👨‍👩‍👧</span>
+      <div class="ec-title">Sou Familiar</div>
+      <div class="ec-desc">Acompanhe a agenda, atividades e evolução do seu filho.</div>
+      <div class="ec-btn">Acessar portal →</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN PROFISSIONAL -->
+<div id="loginProfScreen">
+  <div class="lp-wrap">
+    <div class="lp-left">
+      <span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span>
+      <div class="lp-sub" style="color:rgba(255,255,255,.45);font-size:.6rem;letter-spacing:1px;text-transform:uppercase;text-align:center;margin-top:4px;line-height:1.5">Sistema Clínico</div>
+      <div class="lp-divider"></div>
+      <div class="lp-info">Acesso restrito<br>à equipe autorizada.<br><br>Prontuários visíveis<br>apenas ao profissional<br>responsável.</div>
+    </div>
+    <div class="lp-right">
+      <div class="lp-back" onclick="voltarEntrada()">← Voltar</div>
+      <h2>Acesso Profissional</h2>
+      <p>Selecione seu perfil e digite sua senha.</p>
+      <div id="errProf" class="err-box"></div>
+      <div id="profileGroups"></div>
+      <label class="pw-lbl">Senha</label>
+      <input class="pw-inp" type="password" id="senhaProf" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')doLoginProf()">
+      <button class="btn-entrar" id="btnEntrarProf" onclick="doLoginProf()">Entrar no sistema →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN FAMÍLIA -->
+<div id="loginFamScreen">
+  <div class="lf-card">
+    <div class="lf-top">
+      <span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span>
+      <div class="lf-title" style="color:#fff;font-family:Cormorant Garamond,serif;font-size:1.4rem;font-weight:700">Portal da Família</div>
+    </div>
+    <div class="lf-body">
+      <div class="lf-back" onclick="voltarEntrada()">← Voltar</div>
+      <div id="errFam" class="err-box"></div>
+      <label class="lf-lbl">CPF do Responsável</label>
+      <input class="lf-inp" id="cpfFam" placeholder="000.000.000-00" maxlength="14" oninput="fmtCPF(this)" onkeydown="if(event.key==='Enter')doLoginFam()">
+      <label class="lf-lbl">Senha</label>
+      <input class="lf-inp" id="senhaFam" type="password" placeholder="Senha fornecida pela clínica" onkeydown="if(event.key==='Enter')doLoginFam()">
+      <button class="btn-fam" id="btnEntrarFam" onclick="doLoginFam()">Acessar Portal →</button>
+      <div class="lf-hint">Dúvidas: (61) 99323-6099</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP CLÍNICO -->
+<div id="appClinico">
+  <aside class="sidebar">
+    <div class="logo-area" style="padding:16px 14px 14px">
+      <div style="font-size:1.4rem">🌿</div>
+      <div style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1rem;font-weight:700;line-height:1.2;margin-top:4px">Espaço<br>Montessoriano</div>
+      <div style="color:rgba(255,255,255,.35);font-size:.58rem;letter-spacing:2px;text-transform:uppercase;margin-top:3px">Gestão Clínica</div>
+    </div>
+    <nav class="nav" id="sidebarNav"></nav>
+    <div class="sidebar-foot">
+      <div class="s-user">
+        <div class="s-av" id="sAv"></div>
+        <div><div class="s-name" id="sName"></div><div class="s-role" id="sRole"></div></div>
+      </div>
+      <button class="btn-logout" onclick="logoutProf()">🚪 Sair</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="page-ttl" id="pageTitle">Dashboard</div>
+      <div class="topbar-r">
+        <div class="topbar-date" id="currentDate"></div>
+        <div class="access-badge" id="accessBadge"></div>
+      </div>
+    </div>
+    <div class="content">
+      <section class="section" id="sec-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-lbl">Pacientes Ativos</div><div class="kpi-val" id="kpiPac">—</div><div class="kpi-sub" id="kpiPacSub"></div></div>
+          <div class="kpi k2"><div class="kpi-lbl">Sessões Hoje</div><div class="kpi-val" id="kpiSess">—</div><div class="kpi-sub" id="kpiSessSub"></div></div>
+          <div class="kpi k3"><div class="kpi-lbl">Receita do Mês</div><div class="kpi-val" id="kpiRec">—</div><div class="kpi-sub" id="kpiRecSub"></div></div>
+          <div class="kpi k4"><div class="kpi-lbl">Profissionais</div><div class="kpi-val" id="kpiProf">—</div><div class="kpi-sub">ativos na equipe</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="card"><div class="card-ttl">📅 Próximas Sessões</div><div id="dashSessoes"><div style="color:var(--cinza);font-size:.8rem">Carregando...</div></div></div>
+          <div class="card">
+            <div class="card-ttl">⚡ Ações Rápidas</div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px" id="quickActions"></div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card"><div class="card-ttl">💹 Receita 2025</div><div class="bar-chart" id="barChart"></div></div>
+          <div class="card"><div class="card-ttl">🏷️ Diagnósticos</div>
+            <div class="rr"><span class="rr-lbl">TEA</span><div class="rr-fill" style="width:72%;background:var(--verde)">72%</div></div>
+            <div class="rr"><span class="rr-lbl">TDAH</span><div class="rr-fill" style="width:48%;background:var(--azul)">48%</div></div>
+            <div class="rr"><span class="rr-lbl">Paralisia Cerebral</span><div class="rr-fill" style="width:28%;background:var(--terra)">28%</div></div>
+            <div class="rr"><span class="rr-lbl">T21</span><div class="rr-fill" style="width:18%;background:#D4A853">18%</div></div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="sec-agenda">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <strong style="font-family:'Cormorant Garamond',serif;font-size:1rem">Agenda da Semana</strong>
+          <button class="btn btn-p" onclick="openModal('mAgend')">➕ Agendar</button>
+        </div>
+        <div class="card"><div id="agendaGrid"><div style="color:var(--cinza);font-size:.8rem;padding:20px">Carregando agenda...</div></div></div>
+      </section>
+      <section class="section" id="sec-pacientes">
+        <div class="tbl-toolbar">
+          <div class="search-box">🔍<input placeholder="Buscar paciente..." oninput="filterTable('tblPac',this.value)"></div>
+          <button class="btn btn-p" onclick="openModal('mPaciente')">➕ Novo Paciente</button>
+        </div>
+        <div class="card"><table id="tblPac"><thead><tr><th>#</th><th>Nome</th><th>Idade</th><th>Diagnóstico</th><th>Responsável</th><th>Profissional</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbodyPac"><tr><td colspan="8" style="text-align:center;color:var(--cinza);padding:20px">Carregando...</td></tr></tbody></table></div>
+      </section>
+      <section class="section" id="sec-prontuarios"><div id="prontContent"><div style="color:var(--cinza);font-size:.8rem;padding:20px">Carregando...</div></div></section>
+      <section class="section" id="sec-financeiro"><div id="finContent"></div></section>
+      <section class="section" id="sec-relatorios">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card"><div class="card-ttl">👥 Por Faixa Etária</div>
+            <div class="rr"><span class="rr-lbl">0–3 anos</span><div class="rr-fill" style="width:20%;background:var(--terra)">20%</div></div>
+            <div class="rr"><span class="rr-lbl">4–7 anos</span><div class="rr-fill" style="width:55%;background:var(--verde)">55%</div></div>
+            <div class="rr"><span class="rr-lbl">8–12 anos</span><div class="rr-fill" style="width:35%;background:var(--azul)">35%</div></div>
+            <div class="rr"><span class="rr-lbl">13+ anos</span><div class="rr-fill" style="width:15%;background:#D4A853">15%</div></div>
+          </div>
+          <div class="card"><div class="card-ttl">🏥 Por Especialidade</div>
+            <div class="rr"><span class="rr-lbl">Fonoaudiologia</span><div class="rr-fill" style="width:78%;background:var(--verde)">78%</div></div>
+            <div class="rr"><span class="rr-lbl">Psicologia</span><div class="rr-fill" style="width:65%;background:var(--azul)">65%</div></div>
+            <div class="rr"><span class="rr-lbl">Psicopedagogia</span><div class="rr-fill" style="width:55%;background:var(--roxo)">55%</div></div>
+            <div class="rr"><span class="rr-lbl">Pedagógico</span><div class="rr-fill" style="width:48%;background:#D4A853">48%</div></div>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="sec-equipe">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-p" onclick="openModal('mProf')">➕ Novo Profissional</button></div>
+        <div class="eq-grid" id="equipeGrid"><div style="color:var(--cinza);font-size:.8rem">Carregando...</div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- MODAIS CLÍNICO -->
+<div class="modal-overlay" id="mPaciente"><div class="modal">
+  <div class="modal-ttl">👨‍👧 Novo Paciente</div>
+  <div class="fr"><div class="fg"><label>Nome</label><input id="pNome" placeholder="Nome completo"></div><div class="fg"><label>Nascimento</label><input id="pNasc" type="date"></div></div>
+  <div class="fr"><div class="fg"><label>Diagnóstico</label><select id="pDiag"><option>TEA Nível 1</option><option>TEA Nível 2</option><option>TEA Nível 3</option><option>TDAH</option><option>Paralisia Cerebral</option><option>T21</option><option>Outro</option></select></div><div class="fg"><label>CID-10</label><input id="pCid" placeholder="F84.0"></div></div>
+  <div class="fr"><div class="fg"><label>Responsável</label><input id="pResp"></div><div class="fg"><label>Telefone</label><input id="pTel" placeholder="(61) 9 0000-0000"></div></div>
+  <div class="fr"><div class="fg"><label>E-mail</label><input id="pEmail" type="email"></div><div class="fg"><label>Profissional</label><select id="pProf"></select></div></div>
+  <div class="fg"><label>Observações</label><textarea id="pObs" rows="2"></textarea></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mPaciente')">Cancelar</button><button class="btn btn-p" onclick="salvarPaciente()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mAgend"><div class="modal">
+  <div class="modal-ttl">📅 Novo Agendamento</div>
+  <div class="fr"><div class="fg"><label>Paciente</label><select id="aPac"></select></div><div class="fg"><label>Profissional</label><select id="aProf"></select></div></div>
+  <div class="fr"><div class="fg"><label>Data</label><input id="aData" type="date"></div><div class="fg"><label>Horário</label><input id="aHora" type="time"></div></div>
+  <div class="fr"><div class="fg"><label>Tipo</label><select id="aTipo"><option>Terapia Individual</option><option>Avaliação</option><option>Reunião Família</option><option>Triagem</option></select></div><div class="fg"><label>Duração</label><select id="aDur"><option value="45">45 min</option><option value="60" selected>60 min</option><option value="90">90 min</option></select></div></div>
+  <div class="fg"><label>Observações</label><textarea id="aObs" rows="2"></textarea></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mAgend')">Cancelar</button><button class="btn btn-p" onclick="salvarAgendamento()">Confirmar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mEvo"><div class="modal">
+  <div class="modal-ttl">📝 Registrar Evolução</div>
+  <div class="fr"><div class="fg"><label>Paciente</label><select id="ePac"></select></div><div class="fg"><label>Data</label><input id="eData" type="date"></div></div>
+  <div class="fr"><div class="fg"><label>Profissional</label><input id="eProf" readonly style="background:#F9FAFB"></div><div class="fg"><label>Tipo</label><select id="eTipo"><option>Terapia Individual</option><option>Avaliação</option><option>Reunião Família</option></select></div></div>
+  <div class="fg"><label>Relato da Sessão</label><textarea id="eRelato" rows="3" placeholder="Desenvolvimento, comportamentos, objetivos..."></textarea></div>
+  <div class="fg"><label>Orientações à Família</label><textarea id="eOrient" rows="2"></textarea></div>
+  <div class="fg"><label>Resumo para a Família (linguagem acessível)</label><textarea id="eResumo" rows="2" placeholder="Como explicaria para os pais..."></textarea></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mEvo')">Cancelar</button><button class="btn btn-p" onclick="salvarEvolucao()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mFin"><div class="modal">
+  <div class="modal-ttl">💰 Lançamento Financeiro</div>
+  <div class="fr"><div class="fg"><label>Tipo</label><select id="fTipo"><option>Receita</option><option>Despesa</option></select></div><div class="fg"><label>Data</label><input id="fData" type="date"></div></div>
+  <div class="fg"><label>Descrição</label><input id="fDesc" placeholder="Ex: Sessão — Nome do Paciente"></div>
+  <div class="fr"><div class="fg"><label>Categoria</label><select id="fCat"><option>Sessão Terapêutica</option><option>Avaliação</option><option>Aluguel</option><option>Salários</option><option>Material</option><option>Marketing</option><option>Outros</option></select></div><div class="fg"><label>Valor (R$)</label><input id="fValor" type="number" placeholder="0.00"></div></div>
+  <div class="fr"><div class="fg"><label>Pagamento</label><select id="fPgto"><option>PIX</option><option>Cartão Débito</option><option>Cartão Crédito</option><option>Dinheiro</option><option>Boleto</option></select></div><div class="fg"><label>Status</label><select id="fStatus"><option>Recebido/Pago</option><option>Pendente</option></select></div></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mFin')">Cancelar</button><button class="btn btn-p" onclick="salvarFinanceiro()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="mProf"><div class="modal">
+  <div class="modal-ttl">👥 Novo Profissional</div>
+  <div class="fr"><div class="fg"><label>Nome</label><input id="prNome"></div><div class="fg"><label>Especialidade</label><select id="prEsp"><option>Fonoaudiologia</option><option>Pedagogia</option><option>Psicopedagogia</option><option>Nutrição</option><option>Psicologia</option><option>Psicomotricidade</option><option>Musicoterapia</option></select></div></div>
+  <div class="fr"><div class="fg"><label>E-mail</label><input id="prEmail" type="email"></div><div class="fg"><label>Telefone</label><input id="prTel"></div></div>
+  <div class="modal-foot"><button class="btn btn-s" onclick="closeModal('mProf')">Cancelar</button><button class="btn btn-p" onclick="salvarProfissional()">Salvar</button></div>
+</div></div>
+
+<!-- APP FAMÍLIA -->
+<div id="appFamilia">
+  <header class="fam-header">
+    <div class="fh-brand"><span style="font-family:'Cormorant Garamond',serif;color:#fff;font-size:1.1rem;font-weight:700;letter-spacing:.5px">🌿 Espaço Montessoriano</span></div>
+    <div class="fh-right">
+      <div class="pat-chip"><span id="famEmoji"></span><span id="famNome"></span></div>
+      <button class="btn-sair" onclick="logoutFam()">Sair</button>
+    </div>
+  </header>
+  <div class="tabs-bar">
+    <div class="tab active" onclick="switchTab('inicio',this)">🏠 Início</div>
+    <div class="tab" onclick="switchTab('agenda',this)">📅 Agenda</div>
+    <div class="tab" onclick="switchTab('atividades',this)">📝 Atividades</div>
+    <div class="tab" onclick="switchTab('evolucoes',this)">📈 Evoluções</div>
+    <div class="tab" onclick="switchTab('recados',this)">💬 Recados</div>
+    <div class="tab" onclick="switchTab('galeria',this)">📸 Galeria</div>
+    <div class="tab" onclick="switchTab('mensagem',this)">✉️ Falar com a Equipe</div>
+  </div>
+  <div class="fam-content">
+    <div class="tab-section active" id="tab-inicio">
+      <div class="welcome-banner"><div class="wb-text"><h2 id="wTitle">Olá!</h2><p id="wDesc"></p></div><div class="wb-emoji" id="wEmoji">🌟</div></div>
+      <div class="sum-grid">
+        <div class="sum-card"><div class="sum-lbl">Próxima Sessão</div><div class="sum-val" id="proxSessao">—</div><div class="sum-sub" id="proxSessaoSub"></div></div>
+        <div class="sum-card s2"><div class="sum-lbl">Sessões este mês</div><div class="sum-val" id="sessMes">—</div><div class="sum-sub" id="sessMesSub"></div></div>
+        <div class="sum-card s3"><div class="sum-lbl">Atividades</div><div class="sum-val" id="atvCount">—</div><div class="sum-sub">para fazer em casa</div></div>
+      </div>
+      <div style="background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--sombra);margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:.98rem;font-weight:700;margin-bottom:11px">📅 Próximas Sessões</div><div id="proxList"></div></div>
+      <div style="background:#fff;border-radius:var(--r);padding:16px;box-shadow:var(--sombra)"><div style="font-family:'Cormorant Garamond',serif;font-size:.98rem;font-weight:700;margin-bottom:11px">💬 Último Recado</div><div id="ultRecado"></div></div>
+    </div>
+    <div class="tab-section" id="tab-agenda"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Agenda de Sessões</div><div style="font-size:.74rem;color:var(--cinza);margin-top:2px">Confirme sua presença</div></div><div id="famAgendaList"></div></div>
+    <div class="tab-section" id="tab-atividades"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Atividades para Casa</div></div><div id="famAtvList"></div></div>
+    <div class="tab-section" id="tab-evolucoes"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Evolução Terapêutica</div><div style="font-size:.74rem;color:var(--cinza);margin-top:2px">Resumo em linguagem acessível</div></div><div id="famEvoList"></div></div>
+    <div class="tab-section" id="tab-recados">
+      <div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Recados da Equipe</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div id="famRecList"></div>
+        <div><div style="background:var(--menta);border-radius:var(--r);padding:16px"><div style="font-size:.7rem;font-weight:700;color:var(--verde);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px">📌 Avisos Gerais</div><div id="avisosGerais"></div></div></div>
+      </div>
+    </div>
+    <div class="tab-section" id="tab-galeria"><div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Galeria de Registros</div></div><div class="gal-grid" id="famGalList"></div></div>
+    <div class="tab-section" id="tab-mensagem">
+      <div style="margin-bottom:14px"><div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700">Falar com a Equipe</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="msg-box">
+          <h3>✉️ Nova Mensagem</h3>
+          <div class="msg-fg"><label>Para</label><select id="msgPara"></select></div>
+          <div class="msg-fg"><label>Assunto</label><select><option>Dúvida sobre a sessão</option><option>Dificuldade em casa</option><option>Reagendamento</option><option>Informar falta</option><option>Outro</option></select></div>
+          <div class="msg-fg"><label>Mensagem</label><textarea id="msgTxt" rows="5" placeholder="Escreva sua mensagem..."></textarea></div>
+          <button class="btn-send" onclick="enviarMsg()">Enviar →</button>
+        </div>
+        <div>
+          <div class="msg-box" style="margin-bottom:12px"><h3 style="margin-bottom:10px">📞 Contatos</h3><div id="contatosList"></div></div>
+          <div style="background:var(--areia);border-radius:var(--r);padding:13px;font-size:.74rem;color:var(--cinza);line-height:1.65">💡 Cancelamentos com menos de 24h: <strong style="color:var(--escuro)">(61) 99323-6099</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div onclick="event.stopPropagation()">
+    <div class="lb-inner">
+      <div class="lb-img" id="lbImg"></div>
+      <div class="lb-body">
+        <div class="lb-title" id="lbTitle"></div>
+        <div class="lb-desc" id="lbDesc"></div>
+        <button class="lb-close" onclick="closeLightbox()">✕ Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// SUPABASE — Conexão com banco de dados real
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = 'https://toldfsyxpkgdkpoqqrri.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_sH0m_Dqt2X9VCz1b6HepbQ_bEsb-hnK';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════════════
+// MÓDULOS — permissões por perfil
+// ═══════════════════════════════════════════════
+const MODULOS_POR_PERFIL = {
+  coordenadora: ['dashboard','agenda','pacientes','prontuarios','financeiro','relatorios','equipe'],
+  supervisao:   ['dashboard','agenda','pacientes','prontuarios','relatorios'],
+  clinico:      ['dashboard','agenda','pacientes','prontuarios','relatorios'],
+};
+
+const MODULO_INFO = {
+  dashboard:   {label:'Dashboard',   icon:'📊'},
+  agenda:      {label:'Agenda',      icon:'📅'},
+  pacientes:   {label:'Pacientes',   icon:'👨‍👧'},
+  prontuarios: {label:'Prontuários', icon:'📋'},
+  financeiro:  {label:'Financeiro',  icon:'💰'},
+  relatorios:  {label:'Relatórios',  icon:'📈'},
+  equipe:      {label:'Equipe',      icon:'👥'},
+};
+
+const AVISOS = ['📅 Feriado 12/05 — sem atendimentos','⏰ Confirme presença com 24h de antecedência','📱 WhatsApp: (61) 99323-6099','🌿 Recesso de inverno: 14/07 a 18/07/2025'];
+
+let currentUser = null;
+let currentFamily = null;
+let allProfissionais = [];
+let allPacientes = [];
+let confirmedSessions = {};
+
+// ═══════════════════════════════════════════════
+// INICIALIZAÇÃO
+// ═══════════════════════════════════════════════
+function init() {
+  // Mostra a tela IMEDIATAMENTE sem esperar o banco
+  buildLoginCards();
+  hide('loadingScreen');
+  show('entryScreen');
+  // Carrega profissionais do banco em segundo plano
+  setTimeout(() => {
+    sb.from('profissionais').select('*').eq('ativo', true).order('nome')
+      .then(({ data }) => { if (data && data.length) { allProfissionais = data; buildLoginCards(); } })
+      .catch(() => {});
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════
+// NAVEGAÇÃO ENTRE TELAS
+// ═══════════════════════════════════════════════
+function showLoginProf(){ hide('entryScreen'); show('loginProfScreen'); }
+function showLoginFam(){  hide('entryScreen'); show('loginFamScreen'); }
+function voltarEntrada(){ hideAll(); show('entryScreen'); }
+function show(id){ const el=document.getElementById(id); if(!el)return; el.style.display=id.includes('login')||id.includes('Screen')?'flex':'block'; }
+function hide(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+function hideAll(){ ['loadingScreen','entryScreen','loginProfScreen','loginFamScreen','appClinico','appFamilia'].forEach(hide); }
+
+// ═══════════════════════════════════════════════
+// LOGIN PROFISSIONAL
+// ═══════════════════════════════════════════════
+function buildLoginCards() {
+  // Se não carregou do banco, usa USERS local
+  const fonte = allProfissionais.length ? allProfissionais : USERS.map(u => ({
+    id: u.id, nome: u.nome, cargo: u.cargo, perfil: u.perfil,
+    emoji: u.emoji, cor: u.cor, especialidade: Array.isArray(u.especialidade) ? u.especialidade[0] : u.especialidade,
+    _local: true
+  }));
+  const bMap = {coordenadora:['#DCFCE7','#15803D','Coord.'],supervisao:['#EDE9FE','#6D28D9','Supervisão'],clinico:['#DBEAFE','#1D4ED8','Clínico']};
+  const grupoMap = {};
+  fonte.forEach(u => {
+    const g = u.grupo || (u.especialidade ? u.especialidade.split(' ')[0] : 'Coordenação');
+    if (!grupoMap[g]) grupoMap[g] = [];
+    grupoMap[g].push(u);
+  });
+  document.getElementById('profileGroups').innerHTML = Object.entries(grupoMap).map(([g, users]) => `
+    <div class="prof-group"><div class="pg-label">${g}</div><div class="pg-items">
+    ${users.map(u => { const[bg,cor,lbl]=bMap[u.perfil]||['#F3F4F6','#6B7280','—']; return `
+      <div class="uq" id="uq_${u.id}" onclick="selUser('${u.id}')">
+        <div class="uq-av" style="background:${u.cor||'#999'}22">${u.emoji||'👤'}</div>
+        <div><div class="uq-name">${u.nome}</div><div class="uq-role">${u.cargo||''}</div></div>
+        <span class="uq-badge" style="background:${bg};color:${cor}">${lbl}</span>
+      </div>`; }).join('')}
+    </div></div>`).join('');
+}
+
+let selUserId = null;
+function selUser(id) {
+  selUserId = id;
+  document.querySelectorAll('.uq').forEach(e => e.classList.remove('sel'));
+  document.getElementById('uq_'+id)?.classList.add('sel');
+  document.getElementById('senhaProf').focus();
+}
+
+async function doLoginProf() {
+  const err = document.getElementById('errProf');
+  err.style.display = 'none';
+  if (!selUserId) { err.textContent='Selecione um perfil.'; err.style.display='block'; return; }
+  const senha = document.getElementById('senhaProf').value;
+  const btn = document.getElementById('btnEntrarProf');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  
+  // Tenta primeiro autenticar localmente (mais rápido)
+  const localUser = USERS.find(u => u.id === selUserId && u.senha === senha);
+  if (localUser) {
+    currentUser = {
+      id: localUser.id, nome: localUser.nome, cargo: localUser.cargo,
+      perfil: localUser.perfil, emoji: localUser.emoji, cor: localUser.cor,
+      especialidade: localUser.especialidade, modulos: localUser.modulos
+    };
+    hideAll(); show('appClinico'); await initClinico();
+    btn.disabled = false; btn.textContent = 'Entrar no sistema →';
+    return;
+  }
+
+  // Se não achou localmente, tenta no banco
+  try {
+    const { data, error } = await sb.from('auth_profissionais')
+      .select('*, profissionais(*)')
+      .eq('profissional_id', selUserId)
+      .eq('senha_hash', senha)
+      .single();
+    if (error || !data) throw new Error('Senha incorreta');
+    currentUser = data.profissionais;
+    currentUser.modulos = MODULOS_POR_PERFIL[currentUser.perfil] || [];
+    hideAll(); show('appClinico'); await initClinico();
+  } catch(e) {
+    err.textContent = 'Senha incorreta. Tente novamente.';
+    err.style.display = 'block';
+    document.getElementById('senhaProf').value = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar no sistema →';
+  }
+}
+
+async function logoutProf() {
+  currentUser = null; selUserId = null;
+  document.getElementById('senhaProf').value = '';
+  document.querySelectorAll('.uq').forEach(e => e.classList.remove('sel'));
+  hideAll(); show('entryScreen');
+}
+
+// ═══════════════════════════════════════════════
+// LOGIN FAMÍLIA
+// ═══════════════════════════════════════════════
+function fmtCPF(i){ let v=i.value.replace(/\D/g,''); if(v.length>3)v=v.slice(0,3)+'.'+v.slice(3); if(v.length>7)v=v.slice(0,7)+'.'+v.slice(7); if(v.length>11)v=v.slice(0,11)+'-'+v.slice(11); i.value=v.slice(0,14); }
+
+async function doLoginFam() {
+  const err = document.getElementById('errFam');
+  err.style.display = 'none';
+  const cpf = document.getElementById('cpfFam').value.trim();
+  const senha = document.getElementById('senhaFam').value;
+  const btn = document.getElementById('btnEntrarFam');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try {
+    const { data, error } = await sb.from('familias')
+      .select('*, pacientes(*, profissionais(*))')
+      .eq('cpf_responsavel', cpf)
+      .eq('ativo', true)
+      .single();
+    if (error || !data) throw new Error('CPF não encontrado');
+    // Verificar senha (campo simples por ora)
+    // Em produção: usar hash bcrypt
+    if (data.senha_acesso !== senha) throw new Error('Senha incorreta');
+    currentFamily = data;
+    hideAll(); show('appFamilia'); await initFamilia();
+  } catch(e) {
+    err.textContent = 'CPF ou senha incorretos.';
+    err.style.display = 'block';
+    document.getElementById('senhaFam').value = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Acessar Portal →';
+  }
+}
+
+async function logoutFam() {
+  currentFamily = null; confirmedSessions = {};
+  document.getElementById('cpfFam').value = '';
+  document.getElementById('senhaFam').value = '';
+  hideAll(); show('entryScreen');
+}
+
+// ═══════════════════════════════════════════════
+// INIT CLÍNICO
+// ═══════════════════════════════════════════════
+async function initClinico() {
+  const u = currentUser;
+  document.getElementById('sAv').textContent = u.emoji || '👤';
+  document.getElementById('sAv').style.background = (u.cor||'#999') + '33';
+  document.getElementById('sName').textContent = u.nome;
+  document.getElementById('sRole').textContent = u.cargo || '';
+  const bMap = {coordenadora:['b-coord','Coordenação'],supervisao:['b-sup','Supervisão'],clinico:['b-clin','Clínico']};
+  const [bc,bl] = bMap[u.perfil] || ['b-clin','Clínico'];
+  document.getElementById('accessBadge').className = 'access-badge ' + bc;
+  document.getElementById('accessBadge').textContent = '🔒 ' + bl;
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  buildSidebar(); buildQuickActions();
+  await Promise.all([loadPacientes(), loadAgenda(), loadEquipe(), loadDashboard()]);
+  if (u.modulos.includes('financeiro')) loadFinanceiro();
+  navigate('dashboard');
+}
+
+function buildSidebar() {
+  const grupos = [{label:'Principal',items:['dashboard','agenda']},{label:'Clínica',items:['pacientes','prontuarios']},{label:'Gestão',items:['financeiro','relatorios','equipe']}];
+  let html = '';
+  grupos.forEach(g => {
+    html += `<div class="nav-sec">${g.label}</div>`;
+    g.items.forEach(mod => {
+      const info = MODULO_INFO[mod]; const ok = currentUser.modulos.includes(mod);
+      html += `<div class="nav-item ${ok?'':'locked'}" id="nav_${mod}" onclick="${ok?`navigate('${mod}')`:`showToast('⛔ Acesso restrito.','err')`}"><span class="ni">${info.icon}</span>${info.label}${!ok?'<span style="margin-left:auto;font-size:.55rem;opacity:.5">🔒</span>':''}</div>`;
+    });
+  });
+  document.getElementById('sidebarNav').innerHTML = html;
+}
+
+function buildQuickActions() {
+  const acts = [{l:'➕ Novo Paciente',fn:"openModal('mPaciente')",always:true},{l:'📅 Agendar',fn:"openModal('mAgend')",always:true},{l:'📝 Registrar Evolução',fn:"openEvoModal()",mod:'prontuarios'},{l:'💰 Financeiro',fn:"openModal('mFin')",mod:'financeiro'}];
+  document.getElementById('quickActions').innerHTML = acts.filter(a=>a.always||currentUser.modulos.includes(a.mod)).map(a=>`<button class="btn btn-p" onclick="${a.fn}" style="justify-content:flex-start">${a.l}</button>`).join('');
+}
+
+function navigate(mod) {
+  if (!currentUser.modulos.includes(mod)) { showToast('⛔ Acesso restrito.','err'); return; }
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+mod)?.classList.add('active');
+  document.getElementById('nav_'+mod)?.classList.add('active');
+  document.getElementById('pageTitle').textContent = MODULO_INFO[mod]?.label || mod;
+  if (mod === 'prontuarios') loadPront();
+  if (mod === 'equipe') loadEquipe();
+}
+
+// ═══════════════════════════════════════════════
+// CARREGAR DADOS DO BANCO
+// ═══════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    // KPI pacientes
+    const { count: pac } = await sb.from('pacientes').select('*',{count:'exact',head:true}).eq('status','Ativo');
+    document.getElementById('kpiPac').textContent = pac || 0;
+    document.getElementById('kpiPacSub').textContent = 'pacientes ativos';
+
+    // KPI profissionais
+    const { count: prof } = await sb.from('profissionais').select('*',{count:'exact',head:true}).eq('ativo',true);
+    document.getElementById('kpiProf').textContent = prof || 0;
+
+    // KPI sessões hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    const { count: sess } = await sb.from('agenda').select('*',{count:'exact',head:true}).eq('data_sessao',hoje);
+    document.getElementById('kpiSess').textContent = sess || 0;
+    document.getElementById('kpiSessSub').textContent = 'sessões hoje';
+
+    // KPI financeiro (só coordenadora)
+    if (currentUser.modulos.includes('financeiro')) {
+      const mes = new Date().toISOString().slice(0,7);
+      const { data: fin } = await sb.from('financeiro').select('tipo,valor').gte('data_lancamento',mes+'-01');
+      const rec = (fin||[]).filter(f=>f.tipo==='Receita').reduce((s,f)=>s+parseFloat(f.valor),0);
+      document.getElementById('kpiRec').textContent = 'R$'+(rec/1000).toFixed(1)+'k';
+      document.getElementById('kpiRecSub').textContent = 'receita do mês';
+    } else {
+      document.getElementById('kpiRec').textContent = '—';
+      document.getElementById('kpiRecSub').textContent = 'restrito';
+    }
+
+    // Próximas sessões
+    const { data: proximas } = await sb.from('agenda')
+      .select('*, pacientes(nome), profissionais(nome)')
+      .gte('data_sessao', hoje)
+      .in('status',['Agendada','Confirmada'])
+      .order('data_sessao').order('hora_inicio').limit(5);
+
+    document.getElementById('dashSessoes').innerHTML = (proximas||[]).length
+      ? `<table><thead><tr><th>Data</th><th>Hora</th><th>Paciente</th><th>Profissional</th><th>Tipo</th></tr></thead><tbody>${(proximas||[]).map(s=>`<tr><td>${fmtData(s.data_sessao)}</td><td>${s.hora_inicio?.slice(0,5)||''}</td><td>${s.pacientes?.nome||'—'}</td><td><span style="font-size:.72rem;color:var(--cinza)">${s.profissionais?.nome||'—'}</span></td><td><span class="tag t-tea">${s.tipo||'Terapia'}</span></td></tr>`).join('')}</tbody></table>`
+      : '<div style="color:var(--cinza);font-size:.8rem;padding:10px">Nenhuma sessão agendada.</div>';
+
+    renderBarChart();
+  } catch(e) { console.error('Erro dashboard:', e); }
+}
+
+async function loadPacientes() {
+  try {
+    let query = sb.from('pacientes').select('*, profissionais(nome,especialidade)').order('nome');
+    // Filtro por perfil
+    if (currentUser.perfil === 'clinico') {
+      query = query.eq('profissional_id', currentUser.id);
+    } else if (currentUser.perfil === 'supervisao') {
+      const { data: sups } = await sb.from('supervisoes').select('supervisionado_especialidade').eq('supervisor_id', currentUser.id);
+      const esps = (sups||[]).map(s=>s.supervisionado_especialidade);
+      // buscar profissionais dessas especialidades
+      const { data: profs } = await sb.from('profissionais').select('id').in('especialidade', esps);
+      const ids = (profs||[]).map(p=>p.id);
+      if (ids.length) query = query.in('profissional_id', ids);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    allPacientes = data || [];
+    renderPacientesTable(allPacientes);
+    // Popular selects
+    const opts = allPacientes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+    ['aPac','ePac'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=opts; });
+  } catch(e) { console.error('Erro pacientes:', e); }
+}
+
+function calcIdade(nasc) {
+  if (!nasc) return '—';
+  const d=new Date(nasc),t=new Date();let a=t.getFullYear()-d.getFullYear();
+  if(t.getMonth()<d.getMonth()||(t.getMonth()===d.getMonth()&&t.getDate()<d.getDate()))a--;
+  return a+' anos';
+}
+
+function fmtData(d) {
+  if (!d) return '—';
+  const p = d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+function renderPacientesTable(pacs) {
+  const dc={TEA:'t-tea','TEA Nível 1':'t-tea','TEA Nível 2':'t-tea','TEA Nível 3':'t-tea',TDAH:'t-tdah','Paralisia Cerebral':'t-pc','T21':'t-t21','Trissomia 21':'t-t21'};
+  const sc={Ativo:'#2D6A4F',Inativo:'#6B7280',Alta:'#3B82F6'};
+  document.getElementById('tbodyPac').innerHTML = pacs.length
+    ? pacs.map(p=>`<tr>
+        <td><strong style="font-size:.7rem">#${p.id.slice(0,6)}</strong></td>
+        <td><div style="display:flex;align-items:center;gap:5px"><div style="width:25px;height:25px;border-radius:50%;background:${sc[p.status]||'#999'};display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.62rem;color:#fff">${p.nome.split(' ').map(n=>n[0]).slice(0,2).join('')}</div><strong>${p.nome}</strong></div></td>
+        <td>${calcIdade(p.data_nascimento)}</td>
+        <td><span class="tag ${dc[p.diagnostico]||'t-tea'}">${p.diagnostico||'—'}</span></td>
+        <td>${p.responsavel||'—'}</td>
+        <td style="font-size:.7rem;color:var(--cinza)">${p.profissionais?.nome||'—'}</td>
+        <td><span class="tag ${p.status==='Ativo'?'t-at':'t-in'}">${p.status||'—'}</span></td>
+        <td><button class="btn btn-s" style="padding:4px 8px;font-size:.66rem" onclick="goToPront('${p.id}','${p.nome}')">Prontuário</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:var(--cinza);padding:18px">Nenhum paciente encontrado.</td></tr>';
+}
+
+async function loadAgenda() {
+  try {
+    const hoje = new Date();
+    const seg = new Date(hoje); seg.setDate(hoje.getDate() - hoje.getDay() + 1);
+    const sab = new Date(seg); sab.setDate(seg.getDate() + 5);
+    let query = sb.from('agenda').select('*, pacientes(nome), profissionais(nome,cor)')
+      .gte('data_sessao', seg.toISOString().split('T')[0])
+      .lte('data_sessao', sab.toISOString().split('T')[0])
+      .order('data_sessao').order('hora_inicio');
+    const { data } = await query;
+    renderAgendaGrid(data||[], seg);
+  } catch(e) { console.error('Erro agenda:', e); }
+}
+
+function renderAgendaGrid(sessoes, seg) {
+  const dias = [];
+  for(let i=0;i<6;i++){ const d=new Date(seg); d.setDate(seg.getDate()+i); dias.push(d); }
+  const horas = ['08:00','09:00','10:00','11:00','14:00','15:00','16:00','17:00'];
+  const nomes = ['SEG','TER','QUA','QUI','SEX','SÁB'];
+  let html = `<div style="display:grid;grid-template-columns:52px repeat(6,1fr);gap:2px">
+    <div></div>${dias.map((d,i)=>`<div style="background:var(--verde);color:#fff;text-align:center;padding:7px 3px;border-radius:6px 6px 0 0;font-size:.63rem;font-weight:700">${nomes[i]}<br><small>${d.getDate()}/${d.getMonth()+1}</small></div>`).join('')}`;
+  horas.forEach(h => {
+    html += `<div style="display:flex;align-items:center;justify-content:center;font-size:.61rem;color:var(--cinza);padding:5px 0">${h}</div>`;
+    dias.forEach(d => {
+      const dStr = d.toISOString().split('T')[0];
+      const s = sessoes.find(x => x.data_sessao===dStr && x.hora_inicio?.startsWith(h.replace(':00',':')));
+      if(s) html += `<div style="background:${s.profissionais?.cor||'#52B788'};border-radius:5px;margin:1px;padding:4px 5px"><div style="font-size:.6rem;font-weight:700;color:#fff">${s.pacientes?.nome?.split(' ')[0]||'—'}</div><div style="font-size:.55rem;color:rgba(255,255,255,.8)">${s.especialidade||''}</div></div>`;
+      else html += `<div style="min-height:33px;background:#F0F7F1;border:1.5px dashed #C3E0CB;border-radius:5px;margin:1px;cursor:pointer" onclick="openModal('mAgend')"></div>`;
+    });
+  });
+  html += '</div>';
+  document.getElementById('agendaGrid').innerHTML = html;
+}
+
+async function loadEquipe() {
+  try {
+    const { data } = await sb.from('profissionais').select('*').eq('ativo',true).order('nome');
+    document.getElementById('equipeGrid').innerHTML = (data||[]).map(p=>`
+      <div class="pc">
+        <div class="pc-av" style="background:${p.cor||'#999'}22">${p.emoji||'👤'}</div>
+        <div class="pc-name">${p.nome}</div>
+        <div class="pc-spec">${p.cargo||''}</div>
+        <span class="tag t-at" style="margin-top:6px">Ativo</span>
+      </div>`).join('');
+    // Popular select de profissionais nos modais
+    const opts = (data||[]).map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+    ['aProf','pProf'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=opts; });
+  } catch(e) { console.error('Erro equipe:', e); }
+}
+
+async function loadPront() {
+  let pacs = allPacientes.filter(p=>p.status==='Ativo');
+  const iMap = {coordenadora:{cls:'ai-coord',txt:'✅ Acesso completo a todos os prontuários'},supervisao:{cls:'ai-sup',txt:'🔍 Prontuários dos profissionais sob sua supervisão'},clinico:{cls:'ai-clin',txt:'🔒 Exibindo apenas seus pacientes'}};
+  // Auxiliar vê todos mas sem editar
+  if(currentUser.id==='auxiliar'){
+    return document.getElementById('prontContent').innerHTML=`<div class="access-info ai-clin">📋 Visualização — todos os prontuários (somente leitura)</div><div class="pront-layout"><div class="pront-list">${allPacientes.filter(p=>p.status==='Ativo').map(p=>\`<div class="pp" data-id="\${p.id}" onclick="loadEvolucoes('\${p.id}','\${p.nome}',this)"><div class="pp-name">\${p.nome}</div><div class="pp-diag">\${p.diagnostico||'—'} · \${calcIdade(p.data_nascimento)}</div><div class="pp-last">\${p.profissionais?.nome||'—'}</div></div>\`).join('')}</div><div><div id="prontNome" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;margin-bottom:12px"></div><div id="evoList"><div style="text-align:center;padding:40px;color:var(--cinza);font-size:.8rem">Selecione um paciente</div></div></div></div>`;
+  }
+  const {cls,txt} = iMap[currentUser.perfil] || {cls:'ai-clin',txt:''};
+  const listHtml = pacs.map(p=>`
+    <div class="pp" data-id="${p.id}" onclick="loadEvolucoes('${p.id}','${p.nome}',this)">
+      <div class="pp-name">${p.nome}</div>
+      <div class="pp-diag">${p.diagnostico||'—'} · ${calcIdade(p.data_nascimento)}</div>
+      <div class="pp-last">${p.profissionais?.nome||'—'}</div>
+    </div>`).join('') || '<div style="padding:16px;text-align:center;font-size:.76rem;color:var(--cinza)">Nenhum paciente vinculado</div>';
+  document.getElementById('prontContent').innerHTML = `
+    <div class="access-info ${cls}">${txt}</div>
+    <div class="pront-layout">
+      <div class="pront-list">${listHtml}</div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div id="prontNome" style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700"></div>
+          <button class="btn btn-p" onclick="openEvoModal()">➕ Nova Evolução</button>
+        </div>
+        <div id="evoList"><div style="text-align:center;padding:40px;color:var(--cinza);font-size:.8rem">Selecione um paciente</div></div>
+      </div>
+    </div>`;
+}
+
+async function loadEvolucoes(pacId, pacNome, el) {
+  document.querySelectorAll('.pp').forEach(x=>x.classList.remove('sel')); el?.classList.add('sel');
+  document.getElementById('prontNome').textContent = pacNome;
+  document.getElementById('evoList').innerHTML = '<div style="color:var(--cinza);font-size:.78rem;padding:10px">Carregando...</div>';
+  try {
+    const { data } = await sb.from('evolucoes')
+      .select('*, profissionais(nome)')
+      .eq('paciente_id', pacId)
+      .order('data_sessao', {ascending:false});
+    document.getElementById('evoList').innerHTML = (data||[]).length
+      ? (data||[]).map(e=>`
+          <div class="evo-card">
+            <div class="evo-hd"><span class="evo-prof">${e.profissionais?.nome||'—'}</span> · <span style="font-size:.66rem;color:var(--cinza)">${e.tipo_sessao||''}</span><span class="evo-dt">${fmtData(e.data_sessao)}</span></div>
+            <div class="evo-txt">${e.relato||'—'}</div>
+            ${e.orientacoes_familia?`<div style="background:var(--menta);border-radius:7px;padding:8px 10px;font-size:.73rem;color:var(--verde2);margin-top:8px"><strong>Orientações:</strong> ${e.orientacoes_familia}</div>`:''}
+          </div>`).join('')
+      : '<div style="text-align:center;padding:28px;color:var(--cinza);font-size:.78rem">Nenhuma evolução registrada.</div>';
+  } catch(e) { console.error('Erro evoluções:', e); }
+}
+
+function goToPront(id, nome) {
+  if (!currentUser.modulos.includes('prontuarios')) { showToast('⛔ Sem acesso.','err'); return; }
+  navigate('prontuarios');
+  setTimeout(()=>{ const el=document.querySelector(`.pp[data-id="${id}"]`); if(el){el.click();} },200);
+}
+
+async function loadFinanceiro() {
+  if (!currentUser.modulos.includes('financeiro')) {
+    document.getElementById('finContent').innerHTML='<div class="denied"><div class="denied-icon">🔒</div><h2>Módulo Restrito</h2><p>Acesso exclusivo da Coordenação.</p></div>';
+    return;
+  }
+  try {
+    const mes = new Date().toISOString().slice(0,7);
+    const { data } = await sb.from('financeiro').select('*').order('data_lancamento',{ascending:false}).limit(20);
+    const rec = (data||[]).filter(f=>f.tipo==='Receita').reduce((s,f)=>s+parseFloat(f.valor||0),0);
+    const des = (data||[]).filter(f=>f.tipo==='Despesa').reduce((s,f)=>s+parseFloat(f.valor||0),0);
+    document.getElementById('finContent').innerHTML=`
+      <div class="fin-grid">
+        <div class="fc fc-rec"><div class="fc-lbl">Receita</div><div class="fc-val">R$ ${rec.toFixed(2)}</div></div>
+        <div class="fc fc-des"><div class="fc-lbl">Despesas</div><div class="fc-val">R$ ${des.toFixed(2)}</div></div>
+        <div class="fc fc-sal"><div class="fc-lbl">Saldo</div><div class="fc-val">R$ ${(rec-des).toFixed(2)}</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+          <div class="card-ttl" style="margin:0">📑 Lançamentos</div>
+          <button class="btn btn-p" onclick="openModal('mFin')" style="font-size:.72rem;padding:6px 11px">➕ Novo</button>
+        </div>
+        <table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Status</th></tr></thead>
+        <tbody>${(data||[]).map(f=>`<tr>
+          <td>${fmtData(f.data_lancamento)}</td><td>${f.descricao}</td>
+          <td><span style="font-size:.68rem;color:var(--cinza)">${f.categoria||'—'}</span></td>
+          <td><span class="tag ${f.tipo==='Receita'?'t-at':'t-in'}">${f.tipo}</span></td>
+          <td><strong style="color:${f.tipo==='Receita'?'#16A34A':'#DC2626'}">R$ ${parseFloat(f.valor||0).toFixed(2)}</strong></td>
+          <td style="font-size:.7rem;color:var(--cinza)">${f.status||'—'}</td>
+        </tr>`).join('')}</tbody></table>
+      </div>`;
+  } catch(e) { console.error('Erro financeiro:', e); }
+}
+
+// ═══════════════════════════════════════════════
+// SALVAR DADOS
+// ═══════════════════════════════════════════════
+async function salvarPaciente() {
+  const obj = {
+    nome: document.getElementById('pNome').value,
+    data_nascimento: document.getElementById('pNasc').value || null,
+    diagnostico: document.getElementById('pDiag').value,
+    cid10: document.getElementById('pCid').value,
+    responsavel: document.getElementById('pResp').value,
+    telefone: document.getElementById('pTel').value,
+    email_responsavel: document.getElementById('pEmail').value,
+    profissional_id: document.getElementById('pProf').value || null,
+    observacoes: document.getElementById('pObs').value,
+  };
+  if (!obj.nome) { showToast('Preencha o nome do paciente.','warn'); return; }
+  try {
+    const { error } = await sb.from('pacientes').insert(obj);
+    if (error) throw error;
+    closeModal('mPaciente'); showToast('✅ Paciente cadastrado!');
+    await loadPacientes();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarAgendamento() {
+  const obj = {
+    paciente_id: document.getElementById('aPac').value,
+    profissional_id: document.getElementById('aProf').value,
+    data_sessao: document.getElementById('aData').value,
+    hora_inicio: document.getElementById('aHora').value,
+    duracao_min: parseInt(document.getElementById('aDur').value),
+    tipo: document.getElementById('aTipo').value,
+    observacoes: document.getElementById('aObs').value,
+    status: 'Agendada',
+  };
+  if (!obj.data_sessao || !obj.hora_inicio) { showToast('Preencha data e horário.','warn'); return; }
+  try {
+    const { error } = await sb.from('agenda').insert(obj);
+    if (error) throw error;
+    closeModal('mAgend'); showToast('✅ Agendamento criado!');
+    await loadAgenda();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarEvolucao() {
+  const obj = {
+    paciente_id: document.getElementById('ePac').value,
+    profissional_id: currentUser.id,
+    data_sessao: document.getElementById('eData').value,
+    tipo_sessao: document.getElementById('eTipo').value,
+    relato: document.getElementById('eRelato').value,
+    orientacoes_familia: document.getElementById('eOrient').value,
+    resumo_familia: document.getElementById('eResumo').value,
+  };
+  if (!obj.paciente_id || !obj.data_sessao) { showToast('Preencha paciente e data.','warn'); return; }
+  try {
+    const { error } = await sb.from('evolucoes').insert(obj);
+    if (error) throw error;
+    // Se há resumo para família, criar recado automático
+    if (obj.resumo_familia && obj.resumo_familia.trim()) {
+      await sb.from('recados').insert({
+        paciente_id: obj.paciente_id,
+        profissional_id: currentUser.id,
+        titulo: `Registro de sessão — ${obj.data_sessao}`,
+        mensagem: obj.resumo_familia,
+        tipo: 'normal',
+      });
+    }
+    closeModal('mEvo'); 
+    showToast('✅ Evolução registrada e disponibilizada para a família!');
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarFinanceiro() {
+  const obj = {
+    data_lancamento: document.getElementById('fData').value,
+    descricao: document.getElementById('fDesc').value,
+    tipo: document.getElementById('fTipo').value,
+    categoria: document.getElementById('fCat').value,
+    valor: parseFloat(document.getElementById('fValor').value),
+    forma_pagamento: document.getElementById('fPgto').value,
+    status: document.getElementById('fStatus').value,
+  };
+  if (!obj.descricao || !obj.valor || !obj.data_lancamento) { showToast('Preencha todos os campos.','warn'); return; }
+  try {
+    const { error } = await sb.from('financeiro').insert(obj);
+    if (error) throw error;
+    closeModal('mFin'); showToast('✅ Lançamento salvo!');
+    loadFinanceiro();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+async function salvarProfissional() {
+  const obj = {
+    nome: document.getElementById('prNome').value,
+    especialidade: document.getElementById('prEsp').value,
+    email: document.getElementById('prEmail').value,
+    cargo: document.getElementById('prEsp').value,
+    perfil: 'clinico',
+    emoji: '👤',
+  };
+  if (!obj.nome || !obj.email) { showToast('Nome e e-mail obrigatórios.','warn'); return; }
+  try {
+    const { error } = await sb.from('profissionais').insert(obj);
+    if (error) throw error;
+    closeModal('mProf'); showToast('✅ Profissional cadastrado!');
+    await loadEquipe();
+  } catch(e) { showToast('Erro ao salvar: '+e.message,'err'); }
+}
+
+function openEvoModal() {
+  const opts = allPacientes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  document.getElementById('ePac').innerHTML = opts;
+  document.getElementById('eProf').value = currentUser.nome;
+  document.getElementById('eData').value = new Date().toISOString().split('T')[0];
+  openModal('mEvo');
+}
+
+// ═══════════════════════════════════════════════
+// INIT FAMÍLIA
+// ═══════════════════════════════════════════════
+async function initFamilia() {
+  const f = currentFamily;
+  const pac = f.pacientes;
+  document.getElementById('famEmoji').textContent = '🌿';
+  document.getElementById('famNome').textContent = pac?.nome || 'Paciente';
+  document.getElementById('wTitle').textContent = `Olá, ${f.nome_responsavel?.split(' ')[0]}! 👋`;
+  document.getElementById('wDesc').textContent = `Acompanhe a evolução de ${pac?.nome} e as orientações da equipe.`;
+  document.getElementById('wEmoji').textContent = '🌟';
+  document.getElementById('msgPara').innerHTML = `<option>${pac?.profissionais?.nome||'Profissional Responsável'}</option><option>Coordenação — Vanessa Oliveira</option>`;
+  document.getElementById('contatosList').innerHTML = `<div style="font-size:.79rem;margin-bottom:8px"><strong>${pac?.profissionais?.nome||'—'}</strong><br><span style="color:var(--cinza);font-size:.7rem">${pac?.profissionais?.especialidade||''}</span></div><div style="font-size:.79rem"><strong>Coordenação · Vanessa Oliveira</strong><br><span style="color:var(--cinza);font-size:.7rem">(61) 99323-6099</span></div>`;
+  document.getElementById('avisosGerais').innerHTML = AVISOS.map(a=>`<div style="font-size:.73rem;color:var(--verde2);padding:4px 0;border-bottom:1px solid rgba(45,106,79,.1)">${a}</div>`).join('');
+  await Promise.all([loadFamAgenda(pac.id), loadFamAtividades(pac.id), loadFamEvolucoes(pac.id), loadFamRecados(pac.id), loadFamGaleria(pac.id)]);
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-inicio').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+}
+
+async function loadFamAgenda(pacId) {
+  try {
+    const hoje = new Date().toISOString().split('T')[0];
+    const { data } = await sb.from('agenda').select('*, profissionais(nome)').eq('paciente_id',pacId).gte('data_sessao',hoje).order('data_sessao').order('hora_inicio').limit(10);
+    const { data: passadas } = await sb.from('agenda').select('*, profissionais(nome)').eq('paciente_id',pacId).lt('data_sessao',hoje).order('data_sessao',{ascending:false}).limit(3);
+    const todas = [...(data||[]), ...(passadas||[])];
+    const proximas = (data||[]).slice(0,3);
+
+    // Dashboard próximas sessões
+    document.getElementById('proxList').innerHTML = proximas.map(s=>`
+      <div style="display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #F5F5F5">
+        <div style="background:#FDF0F3;border-radius:9px;padding:7px 8px;text-align:center;min-width:44px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--terra);line-height:1">${s.data_sessao?.split('-')[2]||'—'}</div>
+          <div style="font-size:.54rem;text-transform:uppercase;color:var(--terra);font-weight:700">${['','JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(s.data_sessao?.split('-')[1]||0)]}</div>
+        </div>
+        <div style="flex:1"><div style="font-weight:700;font-size:.82rem">${s.especialidade||'Sessão'}</div><div style="font-size:.7rem;color:var(--cinza)">${s.hora_inicio?.slice(0,5)||''} · ${s.profissionais?.nome||'—'}</div></div>
+        <span class="sp ${s.status==='Confirmada'||confirmedSessions[s.id]?'sp-c':s.status==='Realizada'?'sp-r':'sp-a'}">${confirmedSessions[s.id]?'Confirmada':s.status}</span>
+      </div>`).join('') || '<div style="color:var(--cinza);font-size:.78rem;padding:10px">Sem sessões agendadas.</div>';
+
+    if (proximas.length) {
+      document.getElementById('proxSessao').textContent = fmtData(proximas[0].data_sessao);
+      document.getElementById('proxSessaoSub').textContent = (proximas[0].hora_inicio?.slice(0,5)||'') + ' · ' + (proximas[0].especialidade||'');
+    }
+    const mes = new Date().getMonth()+1;
+    const sessMes = todas.filter(s=>parseInt(s.data_sessao?.split('-')[1]||0)===mes);
+    document.getElementById('sessMes').textContent = sessMes.length;
+    document.getElementById('sessMesSub').textContent = sessMes.filter(s=>s.status==='Realizada').length+' realizadas';
+
+    // Lista agenda completa
+    document.getElementById('famAgendaList').innerHTML = todas.map(s => {
+      const isFut = s.data_sessao >= new Date().toISOString().split('T')[0];
+      const conf = confirmedSessions[s.id] || s.confirmada_familia;
+      return `<div class="sess-card ${!isFut?'passada':''}">
+        <div class="sess-date-box">
+          <div class="sess-day">${s.data_sessao?.split('-')[2]||'—'}</div>
+          <div class="sess-month">${['','JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][parseInt(s.data_sessao?.split('-')[1]||0)]}</div>
+        </div>
+        <div class="sess-info"><div class="sess-title">${s.especialidade||'Sessão'}</div><div class="sess-meta">⏰ ${s.hora_inicio?.slice(0,5)||''} · ${s.profissionais?.nome||'—'}</div></div>
+        <div class="sess-right">
+          <span class="sp ${conf&&isFut?'sp-c':s.status==='Realizada'?'sp-r':s.status==='Cancelada'?'sp-x':'sp-a'}">${conf&&isFut?'Confirmada':s.status||'Agendada'}</span>
+          ${isFut&&!conf?`<button class="btn-conf" onclick="confirmarSessao('${s.id}',this)">Confirmar</button>`:''}
+          ${conf&&isFut?`<button class="btn-conf done" disabled>✓ Confirmada</button>`:''}
+        </div>
+      </div>`;
+    }).join('') || '<div style="color:var(--cinza);font-size:.8rem;padding:20px">Sem sessões encontradas.</div>';
+  } catch(e) { console.error('Erro agenda família:', e); }
+}
+
+async function confirmarSessao(id, btn) {
+  try {
+    await sb.from('agenda').update({confirmada_familia:true,status:'Confirmada'}).eq('id',id);
+    confirmedSessions[id] = true;
+    if(btn){ btn.textContent='✓ Confirmada'; btn.className='btn-conf done'; btn.disabled=true; }
+    showToast('✅ Presença confirmada!','rosa');
+  } catch(e) { showToast('Erro ao confirmar.','err'); }
+}
+
+async function loadFamAtividades(pacId) {
+  try {
+    const { data } = await sb.from('atividades').select('*, profissionais(nome)').eq('paciente_id',pacId).eq('ativo',true).order('criado_em',{ascending:false});
+    document.getElementById('atvCount').textContent = (data||[]).length;
+    document.getElementById('famAtvList').innerHTML = (data||[]).length
+      ? (data||[]).map(a=>`
+          <div class="atv-card">
+            <div class="atv-hd"><div class="atv-title">${a.titulo}</div><span class="atv-tag">${a.urgente?'⚡ Urgente':'Esta semana'}</span></div>
+            <div style="font-size:.69rem;color:var(--cinza);margin-bottom:8px">👩‍⚕️ ${a.profissionais?.nome||'—'} ${a.data_limite?'· Até '+fmtData(a.data_limite):''}</div>
+            <div style="font-size:.8rem;line-height:1.68;color:#374151">${a.instrucoes||''}</div>
+            ${(a.passos||[]).length?`<ul class="atv-steps">${a.passos.map(p=>`<li>${p}</li>`).join('')}</ul>`:''}
+            ${a.observacao?`<div style="background:var(--areia);border-radius:7px;padding:8px 11px;font-size:.74rem;color:var(--cinza);margin-top:10px"><strong style="color:var(--escuro)">💡</strong> ${a.observacao}</div>`:''}
+            <div class="atv-check"><input type="checkbox" id="ck_${a.id}" onchange="if(this.checked)showToast('🌟 Atividade concluída!','rosa')"><label for="ck_${a.id}">Marcar como concluída</label></div>
+          </div>`).join('')
+      : '<div style="color:var(--cinza);font-size:.8rem;padding:20px;text-align:center">Nenhuma atividade no momento.</div>';
+  } catch(e) { console.error('Erro atividades:', e); }
+}
+
+async function loadFamEvolucoes(pacId) {
+  try {
+    const { data } = await sb.from('evolucoes').select('*, profissionais(nome)').eq('paciente_id',pacId).order('data_sessao',{ascending:false}).limit(10);
+    document.getElementById('famEvoList').innerHTML = (data||[]).length
+      ? (data||[]).map(e=>`
+          <div class="evo-card-f">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <span class="evo-esp">${e.profissionais?.nome||'—'}</span>
+              <span style="font-size:.68rem;color:var(--cinza)">📅 ${fmtData(e.data_sessao)}</span>
+            </div>
+            <div class="evo-title-f">${e.tipo_sessao||'Sessão Terapêutica'}</div>
+            <div class="evo-txt-f">${e.resumo_familia||e.relato||'—'}</div>
+            ${(e.conquistas||[]).length?`<div class="evo-conq"><div class="evo-c-title">Conquistas</div>${e.conquistas.map(c=>`<div class="evo-c-item">${c}</div>`).join('')}</div>`:''}
+          </div>`).join('')
+      : '<div style="color:var(--cinza);font-size:.8rem;padding:20px;text-align:center">Nenhuma evolução registrada.</div>';
+  } catch(e) { console.error('Erro evoluções família:', e); }
+}
+
+async function loadFamRecados(pacId) {
+  try {
+    const { data } = await sb.from('recados').select('*, profissionais(nome)').eq('paciente_id',pacId).order('criado_em',{ascending:false}).limit(10);
+    if ((data||[]).length) {
+      const ult = data[0];
+      document.getElementById('ultRecado').innerHTML = `<div class="rec-card ${ult.tipo==='urgente'?'urg':ult.tipo==='aviso'?'avi':''}"><div class="rc-hd"><div><div class="rc-de">${ult.profissionais?.nome||'—'}</div><div class="rc-title">${ult.titulo}</div></div><div class="rc-dt">${fmtData(ult.criado_em?.split('T')[0])}</div></div><div class="rc-txt">${ult.mensagem}</div></div>`;
+    }
+    document.getElementById('famRecList').innerHTML = (data||[]).map(r=>`
+      <div class="rec-card ${r.tipo==='urgente'?'urg':r.tipo==='aviso'?'avi':''}">
+        <div class="rc-hd"><div><div class="rc-de">${r.profissionais?.nome||'—'}</div><div class="rc-title">${r.titulo}</div></div><div class="rc-dt">${fmtData(r.criado_em?.split('T')[0])}</div></div>
+        <div class="rc-txt">${r.mensagem}</div>
+        <span style="padding:2px 7px;border-radius:20px;font-size:.58rem;font-weight:700;background:${r.lido?'#F3F4F6':'#DCFCE7'};color:${r.lido?'#6B7280':'#16A34A'};margin-top:6px;display:inline-block">${r.lido?'Lido':'Novo'}</span>
+      </div>`).join('') || '<div style="color:var(--cinza);font-size:.78rem;padding:14px">Nenhum recado.</div>';
+  } catch(e) { console.error('Erro recados:', e); }
+}
+
+async function loadFamGaleria(pacId) {
+  try {
+    const { data } = await sb.from('galeria').select('*, profissionais(nome)').eq('paciente_id',pacId).order('data_registro',{ascending:false});
+    const bgs = ['#D8F3DC','#EDE9FE','#DBEAFE','#FEF3C7','#FCE7F3','#FDF0F3'];
+    document.getElementById('famGalList').innerHTML = (data||[]).length
+      ? (data||[]).map((g,i)=>`
+          <div class="gal-item" onclick="openLightbox(${i},${JSON.stringify(data||[]).replace(/"/g,'&quot;')})">
+            <div class="gal-img" style="background:${bgs[i%6]}">${g.emoji||'📸'}</div>
+            <div class="gal-info"><div class="gal-title">${g.titulo}</div><div class="gal-dt">${fmtData(g.data_registro)}</div><span class="gal-tag">${g.especialidade||''}</span></div>
+          </div>`).join('')
+      : '<div style="color:var(--cinza);font-size:.78rem;padding:20px;text-align:center;grid-column:1/-1">Nenhum registro na galeria.</div>';
+  } catch(e) { console.error('Erro galeria:', e); }
+}
+
+async function enviarMsg() {
+  const txt = document.getElementById('msgTxt').value;
+  if (!txt.trim()) { showToast('Escreva uma mensagem.','warn'); return; }
+  try {
+    const { error } = await sb.from('mensagens').insert({
+      paciente_id: currentFamily.pacientes?.id,
+      familia_id: currentFamily.id,
+      mensagem: txt,
+      assunto: document.querySelector('#tab-mensagem select')?.value,
+    });
+    if (error) throw error;
+    document.getElementById('msgTxt').value='';
+    showToast('✅ Mensagem enviada! A equipe responderá em breve.','rosa');
+  } catch(e) { showToast('Erro ao enviar.','err'); }
+}
+
+// ═══════ UTILITÁRIOS ═══════
+function renderBarChart() {
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const vals=[12200,13100,14800,15500,18420,0,0,0,0,0,0,0];
+  const max=Math.max(...vals.filter(v=>v>0));
+  document.getElementById('barChart').innerHTML=meses.map((m,i)=>vals[i]?`<div class="bc"><div class="bv">R$${(vals[i]/1000).toFixed(1)}k</div><div class="bar" style="height:${(vals[i]/max)*86}px;background:${i===4?'var(--verde)':'var(--verde-c)'}"></div><div class="bl">${m}</div></div>`:`<div class="bc"><div class="bv" style="opacity:0">-</div><div class="bar" style="height:5px;background:#E8EEE9"></div><div class="bl">${m}</div></div>`).join('');
+}
+
+function filterTable(id,val) {
+  document.querySelectorAll(`#${id} tbody tr`).forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(val.toLowerCase())?'':'none';});
+}
+
+function openLightbox(i, galData) {
+  const g = Array.isArray(galData) ? galData[i] : null;
+  if (!g) return;
+  document.getElementById('lbImg').textContent=g.emoji||'📸';
+  document.getElementById('lbImg').style.background=['#D8F3DC','#EDE9FE','#DBEAFE','#FEF3C7','#FCE7F3','#FDF0F3'][i%6];
+  document.getElementById('lbTitle').textContent=g.titulo;
+  document.getElementById('lbDesc').textContent=g.descricao||'';
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
+
+function switchTab(id,el) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id)?.classList.add('active'); el.classList.add('active');
+}
+
+function openModal(id){ document.getElementById(id)?.classList.add('open'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function showToast(msg,type='') {
+  const t=document.getElementById('toast'); document.getElementById('toastMsg').textContent=msg;
+  t.className='toast '+(type==='err'?'err':type==='warn'?'warn':type==='rosa'?'rosa':'');
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+// START
+init();
+</script>
+</body>
+</html>
