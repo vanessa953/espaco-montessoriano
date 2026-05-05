@@ -153,7 +153,7 @@ td{padding:7px 9px;font-size:.74rem;vertical-align:middle;}
 /* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:200;align-items:center;justify-content:center;}
 .mo.op{display:flex;}
-.md{background:#fff;border-radius:15px;padding:22px;max-width:460px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:up .2s ease;max-height:86vh;overflow-y:auto;}
+.md{background:#fff;border-radius:15px;padding:22px;max-width:560px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:up .2s ease;max-height:90vh;overflow-y:auto;}
 .mt{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;margin-bottom:12px;}
 .mf{margin-bottom:9px;}
 .mf label{display:block;font-size:.63rem;font-weight:600;color:var(--cz);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
@@ -384,6 +384,13 @@ td{padding:7px 9px;font-size:.74rem;vertical-align:middle;}
   <div class="mr"><div class="mf"><label>E-mail</label><input id="pE" type="email"></div><div class="mf"><label>Profissional</label><select id="pPr"></select></div></div>
   <div class="mr"><div class="mf"><label>Status</label><select id="pSt"><option>Ativo</option><option>Inativo</option><option>Alta</option><option>Triagem</option></select></div><div class="mf"><label>CPF Família</label><input id="pCpf" placeholder="000.000.000-00"></div></div>
   <div class="mf"><label>Observações</label><textarea id="pO" rows="2"></textarea></div>
+  <div class="mf"><label>Anamnese <span style="font-size:.6rem;color:var(--cz);font-weight:400">(histórico clínico, gestação, desenvolvimento)</span></label><textarea id="pAnam" rows="4" placeholder="Descreva o histórico do paciente: gestação, parto, desenvolvimento neuropsicomotor, queixas principais, histórico familiar..."></textarea></div>
+  <div class="mftb" style="background:#F8FBF8;border-radius:8px;padding:10px;margin-bottom:9px">
+    <div style="font-size:.63rem;font-weight:700;color:var(--cz);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📎 Anexar Arquivo (Laudos, Relatórios)</div>
+    <input type="file" id="pArquivo" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="font-size:.72rem;width:100%" onchange="previewArquivo(this)">
+    <div id="arquivoPreview" style="font-size:.67rem;color:var(--v);margin-top:4px"></div>
+    <div style="font-size:.6rem;color:var(--cz);margin-top:3px">PDF, Word, JPG, PNG — máx. 5MB</div>
+  </div>
   <div class="mft"><button class="btn bs" onclick="closeM('mPac')">Cancelar</button><button class="btn bp" onclick="salvarPac()">Salvar</button></div>
 </div></div>
 
@@ -835,7 +842,8 @@ function loadPront() {
     '<div class="ai-box '+ai.c+'">'+ai.t+'</div>' +
     '<div style="display:grid;grid-template-columns:230px 1fr;gap:11px">' +
     '<div class="pl">'+lst+'</div>' +
-    '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div id="pNom" style="font-family:\'Cormorant Garamond\',serif;font-size:.98rem;font-weight:700"></div><button class="btn bp" onclick="openEvM()">➕ Nova Evolução</button></div>' +
+    '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div id="pNom" style="font-family:\'Cormorant Garamond\',serif;font-size:.98rem;font-weight:700"></div><div style="display:flex;gap:6px"><button class="btn bs" id="btnAnamnese" onclick="toggleAnamnese()" style="display:none">📋 Anamnese</button><button class="btn bp" onclick="openEvM()">➕ Nova Evolução</button></div></div>' +
+    '<div id="anamneseBox" style="display:none;background:var(--a);border-radius:9px;padding:12px;margin-bottom:12px;font-size:.76rem;line-height:1.7;white-space:pre-wrap;border-left:4px solid #D4A853"></div>' +
     '<div id="evLst"><div style="text-align:center;padding:32px;color:var(--cz);font-size:.76rem">Selecione um paciente</div></div></div></div>';
 }
 
@@ -844,6 +852,20 @@ async function loadEvs(pacId, pacNome, el) {
   if(el)el.classList.add('sel');
   document.getElementById('pNom').textContent = pacNome;
   document.getElementById('evLst').innerHTML = '<div style="color:var(--cz);font-size:.76rem;padding:8px">Carregando...</div>';
+  // Mostrar botão anamnese
+  var btnAnam = document.getElementById('btnAnamnese');
+  var anamBox = document.getElementById('anamneseBox');
+  if (btnAnam) btnAnam.style.display = 'inline-flex';
+  if (anamBox) anamBox.style.display = 'none';
+  // Carregar anamnese do paciente
+  try {
+    var pacData = await sb.from('pacientes').select('anamnese').eq('id',pacId).single();
+    var anamTxt = pacData.data && pacData.data.anamnese;
+    if (anamBox) anamBox.textContent = anamTxt || '(Anamnese não preenchida. Edite o cadastro do paciente para adicionar.)';
+    if (btnAnam) btnAnam.onclick = function() {
+      anamBox.style.display = anamBox.style.display === 'none' ? 'block' : 'none';
+    };
+  } catch(e) {}
   try {
     if (!sb) { document.getElementById('evLst').innerHTML='<div style="color:var(--cz);font-size:.76rem">Sem conexão.</div>'; return; }
     var r = await sb.from('evolucoes').select('*, profissionais(nome)').eq('paciente_id',pacId).order('data_sessao',{ascending:false});
@@ -909,6 +931,7 @@ async function salvarPac() {
     profissional_id: document.getElementById('pPr').value || null,
     status: document.getElementById('pSt').value,
     observacoes: document.getElementById('pO').value,
+    anamnese: document.getElementById('pAnam').value || null,
   };
   if (!obj.nome) { toast('Preencha o nome.','wn'); return; }
   try {
@@ -917,26 +940,49 @@ async function salvarPac() {
     if (id) {
       err = (await sb.from('pacientes').update(obj).eq('id',id)).error;
     } else {
-      err = (await sb.from('pacientes').insert(obj)).error;
+      var ins = await sb.from('pacientes').insert(obj).select('id').single();
+      err = ins.error;
       // Cadastrar família se CPF preenchido
       var cpf = document.getElementById('pCpf').value.trim();
-      if (cpf && !err) {
-        var nr = await sb.from('pacientes').select('id').eq('nome',obj.nome).order('criado_em',{ascending:false}).limit(1).single();
-        if (nr.data) {
-          var senhaFam = gerarSenhaFamilia(obj.responsavel);
-          await sb.from('familias').insert({paciente_id:nr.data.id,cpf_responsavel:cpf,nome_responsavel:obj.responsavel||'Responsável',ativo:true,senha_acesso:senhaFam}).catch(function(){});
-          toast('✅ Paciente cadastrado! Senha da família: ' + senhaFam, 'rs');
-        }
+      if (cpf && !err && ins.data) {
+        var senhaFam = gerarSenhaFamilia(obj.responsavel);
+        await sb.from('familias').insert({paciente_id:ins.data.id,cpf_responsavel:cpf,nome_responsavel:obj.responsavel||'Responsável',ativo:true,senha_acesso:senhaFam}).catch(function(){});
+        toast('✅ Paciente cadastrado! Senha da família: ' + senhaFam, 'rs');
       }
     }
     if (err) throw err;
-    closeM('mPac'); toast(id?'✅ Paciente atualizado!':'✅ Paciente cadastrado!');
+    closeM('mPac');
+    if (!document.getElementById('pCpf') || !document.getElementById('pCpf').value.trim()) {
+      toast(id?'✅ Paciente atualizado!':'✅ Paciente cadastrado!');
+    }
     limparMPac(); await loadPacs();
   } catch(e) { toast('Erro: '+(e.message||e),'er'); }
 }
 
+function toggleAnamnese() {
+  var box = document.getElementById('anamneseBox');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function previewArquivo(input) {
+  var prev = document.getElementById('arquivoPreview');
+  if (input.files && input.files[0]) {
+    var f = input.files[0];
+    if (f.size > 5*1024*1024) {
+      prev.textContent = '⚠️ Arquivo muito grande (máx. 5MB)';
+      prev.style.color = 'var(--vm)';
+      input.value = '';
+      return;
+    }
+    prev.textContent = '✅ ' + f.name + ' (' + (f.size/1024).toFixed(0) + ' KB)';
+    prev.style.color = 'var(--v)';
+  }
+}
+
 function limparMPac() {
-  ['pId','pN','pNs','pC','pR','pT','pE','pO','pCpf'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['pId','pN','pNs','pC','pR','pT','pE','pO','pCpf','pAnam'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var pArq=document.getElementById('pArquivo');if(pArq)pArq.value='';
+  var prev=document.getElementById('arquivoPreview');if(prev)prev.textContent='';;
   var pd=document.getElementById('pD');if(pd)pd.selectedIndex=0;
   var ps=document.getElementById('pSt');if(ps)ps.selectedIndex=0;
   document.getElementById('mPacTtl').textContent='👨‍👧 Novo Paciente';
@@ -951,6 +997,7 @@ function editPac(p) {
   document.getElementById('pT').value = p.telefone || '';
   document.getElementById('pE').value = p.email_responsavel || '';
   document.getElementById('pO').value = p.observacoes || '';
+  var pa=document.getElementById('pAnam');if(pa)pa.value=p.anamnese||'';
   var pd=document.getElementById('pD');if(pd){for(var i=0;i<pd.options.length;i++)if(pd.options[i].value===p.diagnostico){pd.selectedIndex=i;break;}}
   var ps=document.getElementById('pSt');if(ps){for(var i=0;i<ps.options.length;i++)if(ps.options[i].value===p.status){ps.selectedIndex=i;break;}}
   document.getElementById('mPacTtl').textContent='✏️ Editar Paciente';
