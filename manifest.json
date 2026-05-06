@@ -1,22 +1,23 @@
 {
   "name": "Espaço Montessoriano",
-  "short_name": "Espaço Montessori",
+  "short_name": "Montessoriano",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#F0FAF7",
-  "theme_color": "#2E9E82",
-  "orientation": "portrait",
+  "background_color": "#0f7f68",
+  "theme_color": "#0f7f68",
   "icons": [
-  {
-    "src": "/icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  },
-  {
-    "src": "/icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }
-]
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
