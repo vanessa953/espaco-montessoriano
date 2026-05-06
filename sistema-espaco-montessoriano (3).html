@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Espaço Montessoriano | Sistema Multidisciplinar Supabase</title>
+<style>
+:root{
+  --verde:#2E9E82;
+  --verde2:#4BBFA0;
+  --verde3:#E8F7F3;
+  --borda:#C8EAE0;
+  --texto:#1c1917;
+  --vinho:#6d2b3d;
+  --rosa:#b5838d;
+  --amarelo:#f59e0b;
+  --azul:#2563eb;
+  --vermelho:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:#F0FAF7;color:var(--texto)}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.app{min-height:100vh}
+
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#1B7A63,#2E9E82,#4BBFA0);padding:20px}
+.login-box{width:900px;max-width:96vw;background:#fff;border-radius:22px;overflow:hidden;display:grid;grid-template-columns:330px 1fr;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+.login-left{background:linear-gradient(160deg,#1B7A63,#4BBFA0);padding:38px 28px;color:#fff;display:flex;flex-direction:column;justify-content:center}
+.logo{font-weight:800;font-size:1.55rem;line-height:1.2;margin-bottom:12px}
+.logo small{display:block;font-size:.75rem;letter-spacing:1.8px;text-transform:uppercase;opacity:.72;margin-top:6px}
+.login-left p{opacity:.85;font-size:.92rem;line-height:1.6;margin-top:14px}
+.login-right{padding:38px 36px}
+.login-right h1{font-size:1.45rem;margin-bottom:5px}
+.login-right .sub{color:#666;font-size:.85rem;margin-bottom:22px}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tab{border:1px solid var(--borda);background:#fff;border-radius:999px;padding:8px 14px;font-size:.82rem;font-weight:700;color:#555}
+.tab.on{background:var(--verde);color:#fff;border-color:var(--verde)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#555;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1.6px solid #ddd;border-radius:9px;padding:10px 11px;font-size:.86rem;outline:none;background:#fff}
+.field textarea{min-height:88px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--verde)}
+.field input[readonly]{background:#F3F4F6;color:#555}
+.btn{border:none;border-radius:9px;padding:10px 14px;font-weight:700;font-size:.83rem;background:var(--verde);color:#fff}
+.btn.secondary{background:#fff;color:#555;border:1.5px solid #ddd}
+.btn.warn{background:var(--amarelo)}
+.btn.danger{background:var(--vermelho)}
+.btn.vinho{background:var(--vinho)}
+.btn.small{padding:6px 9px;font-size:.72rem;border-radius:7px}
+.dica{font-size:.72rem;color:#777;line-height:1.5;margin-top:12px;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:10px}
+.erro{min-height:18px;color:var(--vermelho);font-size:.78rem;margin-top:8px}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:linear-gradient(180deg,#1B7A63,#4BBFA0);color:#fff;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+.sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-logo strong{display:block;font-size:1rem}
+.sb-logo span{font-size:.65rem;text-transform:uppercase;letter-spacing:1.6px;opacity:.65}
+.nav{padding:10px 0;overflow:auto;flex:1}
+.nav-title{font-size:.56rem;text-transform:uppercase;letter-spacing:1.7px;opacity:.38;padding:11px 16px 4px}
+.nav button{width:100%;background:transparent;border:none;color:rgba(255,255,255,.68);text-align:left;padding:10px 16px;font-size:.84rem;display:flex;gap:9px;align-items:center}
+.nav button:hover,.nav button.on{background:rgba(255,255,255,.14);color:#fff;font-weight:700}
+.sb-foot{border-top:1px solid rgba(255,255,255,.12);padding:12px 16px;font-size:.75rem}
+.main{min-width:0}
+.topbar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--borda);padding:14px 22px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.topbar h2{font-size:1.2rem}
+.topbar p{font-size:.76rem;color:#666;margin-top:2px}
+.content{padding:20px 22px}
+.page{display:none}
+.page.on{display:block}
+
+/* Components */
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:16px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:15px}
+.card .label{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:#777;font-weight:700}
+.card .value{font-size:1.55rem;font-weight:800;margin-top:5px}
+.card .hint{font-size:.72rem;color:#666;margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.panel{background:#fff;border:1px solid var(--borda);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.panel-head{padding:12px 15px;border-bottom:1px solid var(--borda);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-head h3{font-size:.95rem}
+.panel-body{padding:15px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{background:var(--verde3);color:#444;text-transform:uppercase;letter-spacing:.4px;font-size:.63rem;text-align:left;padding:9px;border-bottom:1px solid var(--borda)}
+td{font-size:.8rem;padding:9px;border-bottom:1px solid var(--borda);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;border-radius:999px;padding:3px 8px;font-size:.66rem;font-weight:700;background:#E5E7EB;color:#374151}
+.badge.ok{background:#C8F5E8;color:#1B7A63}.note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px;font-size:.78rem;color:#92400e;line-height:1.5;margin:8px 0}
+.badge.pendente{background:#FEF3C7;color:#92400e}
+.badge.cancelado{background:#FEE2E2;color:#991B1B}
+.actions{display:flex;gap:5px;flex-wrap:wrap}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.form-grid .full{grid-column:1/-1}
+hr{border:none;border-top:1px solid var(--borda);margin:14px 0}
+
+/* Agenda */
+.agenda-grid{display:grid;grid-template-columns:90px repeat(6,1fr);border:1px solid var(--borda);border-radius:14px;overflow:auto;background:#fff;max-height:680px}
+.agenda-cell{border-right:1px solid var(--borda);border-bottom:1px solid var(--borda);min-height:42px;padding:5px;font-size:.7rem;background:#fff}
+.agenda-cell.head{background:var(--verde3);font-weight:800;text-align:center;position:sticky;top:0;z-index:2}
+.agenda-cell.time{background:#F8FAFC;font-weight:700;color:#555;position:sticky;left:0;z-index:1}
+.evento{background:#C8F5E8;border-left:4px solid var(--verde);border-radius:7px;padding:4px;margin:2px 0;font-size:.66rem}
+.evento b{display:block}
+
+/* Família */
+.fam-portal{max-width:900px;margin:0 auto}
+.fam-header{background:linear-gradient(135deg,var(--vinho),var(--rosa));border-radius:18px;color:#fff;padding:20px;margin-bottom:14px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.fam-header h2{font-size:1.25rem}
+.fam-header p{opacity:.82;font-size:.82rem;margin-top:4px}
+.fam-agenda-item{border:1px solid var(--borda);background:#fff;border-radius:12px;padding:12px;margin-bottom:8px}
+.fam-agenda-item strong{display:block;margin-bottom:3px}
+.chartbox{height:220px;display:flex;align-items:end;gap:12px;padding:12px;border:1px dashed var(--borda);border-radius:12px;background:#fff}
+.bar{flex:1;background:linear-gradient(180deg,var(--verde2),var(--verde));border-radius:8px 8px 0 0;min-height:20px;position:relative}
+.bar span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:.68rem;margin-bottom:3px;color:#555}
+.bar label{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:.62rem;margin-top:5px;color:#555;white-space:nowrap}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.46);z-index:20;align-items:center;justify-content:center;padding:18px}
+.overlay.on{display:flex}
+.modal{width:900px;max-width:96vw;max-height:92vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+.modal-head{position:sticky;top:0;background:#fff;z-index:2;padding:14px 18px;border-bottom:1px solid var(--borda);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:1rem}
+.modal-body{padding:18px}
+.modal-foot{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--borda);padding:13px 18px;display:flex;justify-content:flex-end;gap:8px}
+
+/* Toast */
+.toast{position:fixed;right:18px;bottom:18px;background:#1B7A63;color:#fff;padding:11px 15px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);display:none;z-index:99;font-size:.82rem}
+.toast.on{display:block}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:relative;height:auto}
+  .cards,.grid2,.grid3,.form-grid{grid-template-columns:1fr}
+  .login-box{grid-template-columns:1fr}
+  .login-left{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+/*
+  SISTEMA ESPAÇO MONTESSORIANO — VERSÃO HTML + SUPABASE PREPARADO
+
+  Para conectar ao Supabase:
+  1) Crie as tabelas conforme o SQL enviado no final deste arquivo.
+  2) Coloque suas chaves aqui:
+*/
+const SUPABASE_URL = "";   // exemplo: https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = ""; // sua anon key
+
+const WHATSAPP_ESPACO = "5561993236099";
+const APP_LINK = location.href;
+
+/* Banco local provisório — funciona sem Supabase */
+const DB_KEY = "em_sistema_supabase_ready_v1";
+let db = JSON.parse(localStorage.getItem(DB_KEY) || "null") || seedDB();
+let currentUser = null;
+let currentRole = "admin";
+
+function perfilUsuario(){
+  return (currentUser?.nivel || currentUser?.nivel_acesso || "").toLowerCase();
+}
+function isAdmin(){
+  const n = perfilUsuario();
+  return n.includes("administradora") || n.includes("admin") || n.includes("coordenação") || n.includes("coordenacao");
+}
+function isFinanceiro(){
+  return perfilUsuario().includes("financeiro");
+}
+function isRecepcao(){
+  const n = perfilUsuario();
+  return n.includes("recepção") || n.includes("recepcao");
+}
+function isTerapeuta(){
+  return perfilUsuario().includes("terapeuta") || (!isAdmin() && !isFinanceiro() && !isRecepcao());
+}
+function canAccess(page){
+  if(currentRole==="familia") return page==="familia";
+  if(isAdmin()) return true;
+  if(isFinanceiro()) return page==="financeiro" || page==="dashboard";
+  if(isRecepcao()) return ["dashboard","pacientes","agenda","prontuario","documentos"].includes(page);
+  if(isTerapeuta()) return ["dashboard","prontuario","documentos"].includes(page);
+  return false;
+}
+function pacientesPermitidos(){
+  if(!currentUser || isAdmin() || isRecepcao()) return db.pacientes;
+  if(isFinanceiro()) return [];
+
+  const meuId = currentUser.id;
+  const ids = new Set();
+
+  // vínculo principal: cadastro da terapia do paciente
+  db.terapias
+    .filter(t => String(t.profissionalId||"") === String(meuId) || (t.profissionaisAcesso||[]).map(String).includes(String(meuId)) || (t.profissionaisGrupo||[]).map(String).includes(String(meuId)))
+    .forEach(t => ids.add(t.pacienteId));
+
+  // vínculo complementar: agenda lançada para o profissional
+  db.agenda
+    .filter(a => String(a.profissionalId||"") === String(meuId))
+    .forEach(a => ids.add(a.pacienteId));
+
+  // vínculo complementar: registros já criados pelo profissional
+  db.prontuarios
+    .filter(r => String(r.profissionalId||"") === String(meuId))
+    .forEach(r => ids.add(r.pacienteId));
+
+  return db.pacientes.filter(p => ids.has(p.id));
+}
+function podeVerPaciente(id){
+  if(isAdmin() || isRecepcao()) return true;
+  if(isFinanceiro()) return false;
+  return pacientesPermitidos().some(p=>String(p.id)===String(id));
+}
+function profissionaisPermitidos(){
+  if(isAdmin() || isRecepcao()) return db.profissionais;
+  if(isFinanceiro()) return [];
+  return db.profissionais.filter(p=>p.id===currentUser?.id);
+}
+
+function terapeutasDoPaciente(pacienteId){
+  const ids = new Set();
+  db.terapias.filter(t=>String(t.pacienteId)===String(pacienteId)).forEach(t=>{
+    if(t.profissionalId) ids.add(t.profissionalId);
+    (t.profissionaisGrupo||[]).forEach(id=>ids.add(id));
+    (t.profissionaisAcesso||[]).forEach(id=>ids.add(id));
+  });
+  return db.profissionais.filter(p=>ids.has(p.id));
+}
+
+
+function toggleGrupoAcesso(){
+  const tipo = document.getElementById("terGrupoAcesso")?.value;
+  const box = document.getElementById("grupoAcessoBox");
+  if(box){
+    box.style.display = tipo === "sim" ? "block" : "none";
+  }
+}
+function profissionaisSelecionadosGrupo(){
+  return Array.from(document.querySelectorAll(".terProfGrupoCheck:checked")).map(c=>c.value).filter(Boolean);
+}
+function marcarTodosGrupo(){
+  document.querySelectorAll(".terProfGrupoCheck").forEach(c=>c.checked=true);
+}
+function desmarcarTodosGrupo(){
+  document.querySelectorAll(".terProfGrupoCheck").forEach(c=>c.checked=false);
+}
+function nomesProfissionais(ids){
+  return (ids||[]).map(id=>db.profissionais.find(p=>p.id===id)?.nome).filter(Boolean).join(", ");
+}
+function terapiasDoPacienteParaUsuario(pacienteId){
+  let ts = db.terapias.filter(t=>String(t.pacienteId)===String(pacienteId));
+  if(isTerapeuta() && !isAdmin() && !isRecepcao()){
+    ts = ts.filter(t=>String(t.profissionalId||"")===String(currentUser?.id) || (t.profissionaisAcesso||[]).map(String).includes(String(currentUser?.id)) || (t.profissionaisGrupo||[]).map(String).includes(String(currentUser?.id)));
+  }
+  return ts;
+}
+function atualizarAgendaProfissionaisPorPaciente(){
+  const pacienteId = val("agPaciente");
+  const profSelect = document.getElementById("agProf");
+  const terapiaSelect = document.getElementById("agTerapia");
+  if(!profSelect || !terapiaSelect) return;
+  const ts = terapiasDoPacienteParaUsuario(pacienteId);
+  const profs = isAdmin() || isRecepcao() ? (terapeutasDoPaciente(pacienteId).length ? terapeutasDoPaciente(pacienteId) : db.profissionais) : profissionaisPermitidos();
+  profSelect.innerHTML = profs.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+  terapiaSelect.innerHTML = ts.length ? ts.map(t=>`<option value="${t.tipo}">${t.tipo}</option>`).join("") : servicosOptions();
+}
+function atualizarProntuarioProfissionaisPorPaciente(){
+  const pacienteId = val("prPaciente");
+  const profSelect = document.getElementById("prProf");
+  const terapiaSelect = document.getElementById("prTerapia");
+  if(!profSelect || !terapiaSelect) return;
+  const ts = terapiasDoPacienteParaUsuario(pacienteId);
+  const profs = isAdmin() || isRecepcao() ? (terapeutasDoPaciente(pacienteId).length ? terapeutasDoPaciente(pacienteId) : db.profissionais) : profissionaisPermitidos();
+  profSelect.innerHTML = profs.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("");
+  terapiaSelect.innerHTML = ts.length ? ts.map(t=>`<option value="${t.tipo}">${t.tipo}</option>`).join("") : servicosOptions();
+}
+
+
+function seedDB(){
+  return {
+    profissionais:[
+      {id:uid(),foto:"",documentos:[],nome:"Vanessa Oliveira",cpf:"",profissao:"Fonoaudióloga / Psicopedagoga",especialidade:"Montessori, Neurodesenvolvimento e Clínica Multidisciplinar",whatsapp:"61993236099",email:"vanessa@espacomontessoriano.com",login:"vanessa@espacomontessoriano.com",senha:"Espaco@123",nivel:"Administradora"}
+    ],
+    pacientes:[
+      {id:uid(),foto:"",nome:"Laura Exemplo",nascimento:"2019-05-09",cpf:"",rg:"",sexo:"Feminino",escola:"Escola Montessori",serie:"1º ano",diagnostico:"Em acompanhamento",observacoes:"Paciente exemplo para demonstração.",responsavel:"Débora",responsavelCpf:"00000000000",whatsapp:"61999999999",email:"familia@example.com",endereco:"",loginFamilia:"00000000000",senhaFamilia:"laura123"}
+    ],
+    terapias:[],
+    agenda:[],
+    prontuarios:[],
+    planos:[],
+    financeiro:[],
+    documentos:[]
+  }
+}
+
+function save(){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4); }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),3000); }
+function money(v){ return (Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+function onlyNum(v){ return String(v||"").replace(/\D/g,""); }
+function nomeSenha(nome){ return onlyText(nome).split(" ")[0].toLowerCase()+"123"; }
+function onlyText(v){ return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9 ]/g,"").trim(); }
+function gerarAcessoFamilia(nomePaciente, cpfResponsavel){
+  const cpf = onlyNum(cpfResponsavel);
+  const primeiroNome = onlyText(nomePaciente).split(" ")[0].toLowerCase() || "familia";
+  const sufixo = Math.floor(1000 + Math.random()*9000);
+  return {
+    login: cpf || (primeiroNome + sufixo),
+    senha: primeiroNome + "123"
+  };
+}
+function atualizarAcessoFamiliaVisual(){
+  const nome = document.getElementById("pacNome")?.value || "";
+  const cpf = document.getElementById("pacRespCpf")?.value || "";
+  const login = document.getElementById("pacLoginFam");
+  const senha = document.getElementById("pacSenhaFam");
+  if(!login || !senha) return;
+  const acesso = gerarAcessoFamilia(nome, cpf);
+  login.value = acesso.login;
+  senha.value = acesso.senha;
+}
+function forcarGerarAcessoFamilia(){
+  atualizarAcessoFamiliaVisual();
+  toast("Login e senha da família gerados pelo app.");
+}
+function renderLogin(){
+  document.getElementById("app").innerHTML = `
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-left">
+        <div class="logo">Espaço Montessoriano <small>Clínica Multidisciplinar</small></div>
+        <p>Sistema integrado com pacientes, profissionais, agenda, prontuário, financeiro, App Família e preparação para Supabase.</p>
+      </div>
+      <div class="login-right">
+        <h1>Acesso ao Sistema</h1>
+        <div class="sub">Entre como administradora/profissional ou família.</div>
+        <div class="tabs">
+          <button class="tab on" id="tabProf" onclick="setLoginTab('prof')">Profissionais</button>
+          <button class="tab" id="tabFam" onclick="setLoginTab('fam')">Famílias</button>
+        </div>
+        <input type="hidden" id="loginRole" value="prof">
+        <div class="field"><label>Login</label><input id="loginInput" placeholder="e-mail, CPF ou login da família"></div>
+        <div class="field"><label>Senha</label><input id="senhaInput" type="password" placeholder="senha"></div>
+        <button class="btn" onclick="doLogin()">Entrar</button>
+        <div id="loginErro" class="erro"></div>
+        <div class="dica">
+          <b>Acesso restrito.</b><br>
+          Use seu login e senha cadastrados. As famílias recebem o acesso pelo WhatsApp após o cadastro do paciente.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>Documentos anexados ao prontuário do paciente</h3><button class="btn" onclick="openDocModal()">Novo anexo</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Documento</th><th>Tipo</th><th>Abrir</th></tr></thead><tbody>
+      ${db.documentos.filter(d=>podeVerPaciente(d.pacienteId)).map(d=>`<tr><td>${nomePac(d.pacienteId)}</td><td>${d.nome}</td><td>${d.tipo}</td><td>${d.url?`<a href="${d.url}" target="_blank">Abrir</a>`:"Registrado"}</td></tr>`).join("") || `<tr><td colspan="4">Nenhum documento anexado.</td></tr>`}
+    </tbody></table></div>
+  </div>`;
+}
+function setLoginTab(role){
+  document.getElementById("loginRole").value=role;
+  document.getElementById("tabProf").classList.toggle("on",role==="prof");
+  document.getElementById("tabFam").classList.toggle("on",role==="fam");
+}
+function doLogin(){
+  const role=document.getElementById("loginRole").value;
+  const login=document.getElementById("loginInput").value.trim();
+  const senha=document.getElementById("senhaInput").value.trim();
+  const erro=document.getElementById("loginErro");
+  if(role==="prof"){
+    const u=db.profissionais.find(p=>p.login===login && p.senha===senha);
+    if(!u){erro.textContent="Login ou senha inválidos."; return;}
+    currentUser=u; currentRole="profissional"; 
+    const primeiraPagina = isFinanceiro() ? "financeiro" : "dashboard";
+    renderApp(primeiraPagina);
+  }else{
+    const p=db.pacientes.find(x=>String(x.loginFamilia)===login && String(x.senhaFamilia)===senha);
+    if(!p){erro.textContent="Login ou senha da família inválidos."; return;}
+    currentUser=p; currentRole="familia"; renderFamilia();
+  }
+}
+function logout(){ currentUser=null; currentRole="admin"; renderLogin(); }
+
+/* App admin */
+function renderApp(page){
+  if(!canAccess(page)){
+    page = isFinanceiro() ? "financeiro" : "dashboard";
+  }
+  const pageTitle = {
+    dashboard:"Dashboard Geral", pacientes:"Pacientes", agenda:"Agenda Semanal",
+    prontuario:"Prontuário e Intervenção", financeiro:"Financeiro", profissionais:"Profissionais",
+    documentos:"Documentos", configuracoes:"Supabase / Configurações"
+  }[page] || "Sistema";
+  document.getElementById("app").innerHTML = `
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo">
+        <strong>Espaço Montessoriano</strong>
+        <span>Clínica Multidisciplinar</span>
+      </div>
+      <nav class="nav">
+        <div class="nav-title">Gestão</div>
+        ${canAccess("dashboard") ? navBtn("dashboard","📊","Dashboard",page) : ""}
+        ${canAccess("pacientes") ? navBtn("pacientes","👧","Pacientes",page) : ""}
+        ${canAccess("agenda") ? navBtn("agenda","🗓️","Agenda",page) : ""}
+        ${canAccess("prontuario") ? navBtn("prontuario","🧠","Prontuário",page) : ""}
+        ${canAccess("financeiro") ? navBtn("financeiro","💰","Financeiro",page) : ""}
+        <div class="nav-title">Equipe e documentos</div>
+        ${isAdmin() ? navBtn("profissionais","👩‍⚕️","Profissionais",page) : ""}
+        ${canAccess("documentos") ? navBtn("documentos","📎","Documentos",page) : ""}
+        ${isAdmin() ? navBtn("configuracoes","⚙️","Supabase",page) : ""}
+      </nav>
+      <div class="sb-foot">
+        <b>${currentUser?.nome||"Usuário"}</b><br>
+        <span>${currentUser?.nivel||"Administradora"}</span><br><br>
+        <button class="btn secondary small" onclick="logout()">Sair</button>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div><h2>${pageTitle}</h2><p>Sistema profissional integrado do Espaço Montessoriano</p></div>
+        <div><button class="btn small" onclick="openWhatsEspaco()">WhatsApp do Espaço</button></div>
+      </div>
+      <div class="content" id="pageContent"></div>
+    </main>
+  </div>`;
+  if(page==="dashboard") renderDashboard();
+  if(page==="pacientes") renderPacientes();
+  if(page==="agenda") renderAgenda();
+  if(page==="prontuario") renderProntuario();
+  if(page==="financeiro") renderFinanceiro();
+  if(page==="profissionais") renderProfissionais();
+  if(page==="documentos") renderDocumentos();
+  if(page==="configuracoes") renderConfig();
+}
+function navBtn(id,ico,label,page){ return `<button class="${page===id?'on':''}" onclick="renderApp('${id}')"><span>${ico}</span>${label}</button>`; }
+function openWhatsEspaco(){
+  window.open(`https://wa.me/${WHATSAPP_ESPACO}`,"_blank");
+}
+
+function renderDashboard(){
+  const pacs = pacientesPermitidos();
+  const agendaPermitida = db.agenda.filter(a=>!isTerapeuta() || a.profissionalId===currentUser.id || podeVerPaciente(a.pacienteId));
+  const receitaPrev = db.financeiro.reduce((s,f)=>s+(Number(f.valor)||0)+(Number(f.deslocamento)||0),0);
+  const receitaPago = db.financeiro.filter(f=>f.status==="Pago").reduce((s,f)=>s+(Number(f.valor)||0)+(Number(f.deslocamento)||0),0);
+  const pendente = receitaPrev-receitaPago;
+  document.getElementById("pageContent").innerHTML = `
+  <div class="cards">
+    <div class="card"><div class="label">Pacientes visíveis</div><div class="value">${pacs.length}</div><div class="hint">${isTerapeuta() ? "vinculados ao terapeuta" : "cadastros vinculados"}</div></div>
+    <div class="card"><div class="label">Agenda visível</div><div class="value">${agendaPermitida.length}</div><div class="hint">atendimentos cadastrados</div></div>
+    ${canAccess("financeiro") ? `<div class="card"><div class="label">Receita prevista</div><div class="value">${money(receitaPrev)}</div><div class="hint">financeiro automático</div></div>
+    <div class="card"><div class="label">Pendente</div><div class="value">${money(pendente)}</div><div class="hint">previsão a receber</div></div>` : `<div class="card"><div class="label">Perfil</div><div class="value" style="font-size:1rem">${currentUser?.nivel||"Terapeuta"}</div><div class="hint">acesso limitado</div></div>
+    <div class="card"><div class="label">Prontuários</div><div class="value">${db.prontuarios.filter(r=>podeVerPaciente(r.pacienteId)).length}</div><div class="hint">registros permitidos</div></div>`}
+  </div>
+  <div class="grid2">
+    ${canAccess("financeiro") ? `<div class="panel">
+      <div class="panel-head"><h3>Gráfico financeiro</h3></div>
+      <div class="panel-body">${barChart([{l:"Previsto",v:receitaPrev},{l:"Recebido",v:receitaPago},{l:"Pendente",v:pendente}])}</div>
+    </div>` : `<div class="panel"><div class="panel-head"><h3>Acesso do perfil</h3></div><div class="panel-body">
+<div class="note">
+<b>Pacientes automáticos do terapeuta:</b><br>
+Os pacientes vinculados às terapias do profissional aparecem automaticamente no prontuário e nos documentos permitidos ao terapeuta.<br><br>
+<b>Acesso restrito:</b><br>
+O financeiro permanece bloqueado para terapeutas e recepção. Terapeutas não acessam agenda nem cadastro geral de pacientes.
+</div></div></div>`}
+    <div class="panel">
+      <div class="panel-head"><h3>Agenda da semana</h3><button class="btn small" onclick="renderApp('agenda')">Abrir agenda</button></div>
+      <div class="panel-body">${agendaResumo()}</div>
+    </div>
+  </div>`;
+}
+function barChart(items){
+  const max=Math.max(...items.map(i=>i.v),1);
+  return `<div class="chartbox">${items.map(i=>`<div class="bar" style="height:${Math.max(12,(i.v/max)*180)}px"><span>${money(i.v)}</span><label>${i.l}</label></div>`).join("")}</div>`;
+}
+function agendaResumo(){
+  const proximos=db.agenda.filter(a=>!isTerapeuta() || a.profissionalId===currentUser?.id || podeVerPaciente(a.pacienteId)).slice(0,8);
+  if(!proximos.length) return `<div class="badge pendente">Nenhum atendimento lançado ainda</div>`;
+  return proximos.map(a=>{
+    const p=db.pacientes.find(x=>x.id===a.pacienteId)?.nome||"-";
+    return `<div class="fam-agenda-item"><strong>${p}</strong>${a.data} • ${a.hora} • ${a.terapia}<br><span class="badge ok">${a.status||"Pendente"}</span></div>`;
+  }).join("");
+}
+
+/* Pacientes */
+function renderPacientes(){
+  document.getElementById("pageContent").innerHTML = `
+  <div class="panel">
+    <div class="panel-head"><h3>Cadastro de Pacientes</h3><button class="btn" onclick="openPacienteModal()">Novo paciente</button></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Foto</th><th>Paciente</th><th>Responsável</th><th>Login Família</th><th>Senha</th><th>Ações</th></tr></thead>
+        <tbody>${pacientesPermitidos().map(p=>`
+          <tr>
+            <td>${p.foto?`<img src="${p.foto}" style="width:44px;height:44px;border-radius:50%;object-fit:cover">`:`<div style="width:44px;height:44px;border-radius:50%;background:#C8F5E8;display:flex;align-items:center;justify-content:center;font-weight:800;color:#2E9E82">${(p.nome||'?')[0]}</div>`}</td>
+            <td><b>${p.nome}</b><br><small>CPF: ${p.cpf||"-"} • ${p.escola||""}</small><br><small><b>Terapeuta(s):</b> ${terapeutasDoPaciente(p.id).map(x=>x.nome).join(", ")||"sem vínculo"}</small></td>
+            <td>${p.responsavel||"-"}<br><small>CPF: ${p.responsavelCpf||"-"} • ${p.whatsapp||""}</small></td>
+            <td><code>${p.loginFamilia||"-"}</code></td>
+            <td><code>${p.senhaFamilia||"-"}</code></td>
+            <td class="actions">
+              <button class="btn small" onclick="openPacienteModal('${p.id}')">Editar</button>
+              <button class="btn small vinho" onclick="enviarAcesso('${p.id}')">Reenviar login/senha</button>
+              <button class="btn small secondary" onclick="gerarPrevisaoPaciente('${p.id}')">Gerar financeiro</button>
+            </td>
+          </tr>`).join("")}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+function openPacienteModal(id){
+  const p=id?db.pacientes.find(x=>x.id===id):{};
+  modal(`Cadastro do Paciente`, `
+    <div class="form-grid">
+      <div class="field full"><label>Foto do paciente</label><input type="file" id="pacFoto" accept="image/*" onchange="previewFoto(event)"><input type="hidden" id="pacFotoUrl" value="${p.foto||""}"><div id="fotoPrev">${p.foto?`<img src="${p.foto}" style="margin-top:8px;width:80px;height:80px;border-radius:50%;object-fit:cover">`:""}</div></div>
+      <div class="field"><label>Nome completo</label><input id="pacNome" value="${p.nome||""}" oninput="atualizarAcessoFamiliaVisual()"></div>
+      <div class="field"><label>Data de nascimento</label><input type="date" id="pacNascimento" value="${p.nascimento||""}"></div>
+      <div class="field"><label>CPF do paciente</label><input id="pacCpf" value="${p.cpf||""}"></div>
+      <div class="field"><label>RG</label><input id="pacRg" value="${p.rg||""}"></div>
+      <div class="field"><label>Sexo</label><select id="pacSexo"><option></option><option ${p.sexo==="Feminino"?"selected":""}>Feminino</option><option ${p.sexo==="Masculino"?"selected":""}>Masculino</option><option ${p.sexo==="Outro"?"selected":""}>Outro</option></select></div>
+      <div class="field"><label>Escola</label><input id="pacEscola" value="${p.escola||""}"></div>
+      <div class="field"><label>Série/Ano</label><input id="pacSerie" value="${p.serie||""}"></div>
+      <div class="field full"><label>Diagnóstico / hipótese / perfil</label><textarea id="pacDiagnostico">${p.diagnostico||""}</textarea></div>
+      <div class="field"><label>Responsável</label><input id="pacResp" value="${p.responsavel||""}"></div>
+      <div class="field"><label>CPF do responsável</label><input id="pacRespCpf" value="${p.responsavelCpf||""}" oninput="atualizarAcessoFamiliaVisual()"></div>
+      <div class="field"><label>WhatsApp responsável</label><input id="pacWhats" value="${p.whatsapp||""}"></div>
+      <div class="field"><label>E-mail responsável</label><input id="pacEmail" value="${p.email||""}"></div>
+      <div class="field full"><label>Endereço</label><input id="pacEndereco" value="${p.endereco||""}"></div>
+      <div class="field"><label>Login Família — gerado pelo app</label><input id="pacLoginFam" value="${p.loginFamilia||""}" placeholder="Gerado automaticamente" readonly></div>
+      <div class="field"><label>Senha Família — gerada pelo app</label><input id="pacSenhaFam" value="${p.senhaFamilia||""}" placeholder="Gerada automaticamente" readonly></div>
+      <div class="field full">
+        <button type="button" class="btn secondary small" onclick="forcarGerarAcessoFamilia()">Gerar/Atualizar login e senha agora</button>
+        <div class="note">O app gera automaticamente o acesso da família. Login: CPF do responsável. Se o CPF ainda não foi preenchido, será usado o primeiro nome do paciente + número. Senha: primeiro nome do paciente + 123.</div>
+      </div>
+      <div class="field full"><label>Observações</label><textarea id="pacObs">${p.observacoes||""}</textarea></div>
+    </div>
+    <hr>
+    <h3 style="font-size:.95rem;margin-bottom:8px">Terapias e valores vinculados</h3>
+    <div class="grid3">
+      <div class="field"><label>Terapia/Serviço</label><select id="terTipo">${servicosOptions()}</select></div>
+      <div class="field"><label>Profissional responsável principal</label><select id="terProf">${db.profissionais.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+
+      <div class="field">
+        <label>Liberar acesso em grupo?</label>
+        <select id="terGrupoAcesso" onchange="toggleGrupoAcesso()">
+          <option value="nao">Não</option>
+          <option value="sim">Sim</option>
+        </select>
+      </div>
+
+      <div class="field full" id="grupoAcessoBox" style="display:none">
+        <label>Selecionar quem terá acesso ao prontuário</label>
+        <div id="terProfGrupoChecks" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:1px solid #ddd;border-radius:9px;padding:10px;background:#F8FAFC">
+          ${db.profissionais.map(p=>`
+            <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;text-transform:none;letter-spacing:0;font-weight:600;color:#333">
+              <input type="checkbox" class="terProfGrupoCheck" value="${p.id}">
+              ${p.nome} <small style="color:#777">(${p.profissao||"profissional"})</small>
+            </label>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="field full">
+        <div class="note">
+        O acesso em grupo é opcional. Quando ativado, marque exatamente quais profissionais poderão visualizar e registrar informações no prontuário do paciente.
+        </div>
+        <button type="button" class="btn secondary small" onclick="marcarTodosGrupo()">Marcar todos</button>
+        <button type="button" class="btn secondary small" onclick="desmarcarTodosGrupo()">Desmarcar todos</button>
+      </div>
+      <div class="field"><label>Individual ou grupo</label><select id="terGrupo"><option>Individual</option><option>Grupo</option></select></div>
+      <div class="field"><label>Frequência semanal</label><input type="number" id="terFreq" value="1" min="0"></div>
+      <div class="field"><label>Valor por sessão</label><input type="number" id="terValor" value="0" min="0" step="0.01"></div>
+      <div class="field"><label>Domiciliar?</label><select id="terDom"><option>Não</option><option>Sim</option></select></div>
+      <div class="field"><label>Taxa deslocamento</label><input type="number" id="terTaxa" value="0" min="0" step="0.01"></div>
+      <input type="hidden" id="terEditIndex" value="">
+      <div class="field full">
+        <button type="button" id="btnAddTer" class="btn secondary" onclick="addTerapiaTemp()">Adicionar terapia ao paciente</button>
+        <button type="button" class="btn secondary small" onclick="limparFormularioTerapia()">Limpar campos</button>
+      </div>
+    </div>
+    <h4 style="font-size:.85rem;margin:10px 0 6px">Terapias/profissionais vinculados ao paciente</h4>
+    <div id="terapiasTemp">${listaTerapiasPaciente(id)}</div>
+  `, `
+    <button class="btn secondary" onclick="closeModal()">Cancelar</button>
+    <button class="btn" onclick="savePaciente('${id||""}')">Salvar paciente</button>
+  `);
+}
+function previewFoto(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ document.getElementById("pacFotoUrl").value=r.result; document.getElementById("fotoPrev").innerHTML=`<img src="${r.result}" style="margin-top:8px;width:80px;height:80px;border-radius:50%;object-fit:cover">`; };
+  r.readAsDataURL(f);
+}
+function servicosOptions(){
+  const s=["Psicopedagogia","Fonoaudiologia","ABA","Nutrição","Neuropsicologia","Acompanhamento Pedagógico","Acompanhamento Pedagógico Domiciliar","Mapeamento Cerebral","Avaliação Neuropsicológica Cognitiva","Técnicas de Neuromodulação","Reunião","Visita Escolar","Outro"];
+  return s.map(x=>`<option>${x}</option>`).join("");
+}
+let tempTerapias=[];
+function listaTerapiasPaciente(id){
+  tempTerapias = id ? db.terapias.filter(t=>t.pacienteId===id).map(t=>({...t})) : [];
+  return renderTempTerapias();
+}
+function renderTempTerapias(){
+  if(!tempTerapias.length) return `<div class="dica">Nenhuma terapia adicionada ainda.</div>`;
+  return `<table>
+    <thead>
+      <tr>
+        <th>Serviço</th>
+        <th>Profissional</th>
+        <th>Tipo</th>
+        <th>Freq.</th>
+        <th>Valor</th>
+        <th>Domiciliar</th>
+        <th>Desloc.</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${tempTerapias.map((t,i)=>`<tr>
+        <td>${t.tipo}</td>
+        <td>${db.profissionais.find(p=>p.id===t.profissionalId)?.nome||t.profissionalNome||"-"}${(t.profissionaisGrupo||[]).length?`<br><small><b>Grupo:</b> ${nomesProfissionais(t.profissionaisGrupo)}</small>`:""}</td>
+        <td>${t.grupo}</td>
+        <td>${t.freq}x/sem</td>
+        <td>${money(t.valor)}</td>
+        <td>${t.domiciliar||"Não"}</td>
+        <td>${money(t.taxa)}</td>
+        <td class="actions">
+          <button type="button" class="btn small" onclick="editarTerapiaTemp(${i})">Editar</button>
+          <button type="button" class="btn small danger" onclick="removerTerapiaTemp(${i})">Remover</button>
+        </td>
+      </tr>`).join("")}
+    </tbody>
+  </table>`;
+}
+function addTerapiaTemp(){
+  const idx = document.getElementById("terEditIndex")?.value;
+  const acessoGrupoAtivo = val("terGrupoAcesso")==="sim";
+  const grupoProf = acessoGrupoAtivo ? profissionaisSelecionadosGrupo() : [];
+  const principal = val("terProf");
+  const todosProf = [...new Set([principal, ...grupoProf].filter(Boolean))];
+  const terapia = {
+    id: idx !== "" && idx !== undefined ? (tempTerapias[Number(idx)]?.id || uid()) : uid(),
+    tipo:val("terTipo"),
+    profissionalId:principal,
+    profissionalNome: db.profissionais.find(p=>p.id===principal)?.nome || "",
+    profissionaisGrupo: grupoProf,
+    profissionaisAcesso: todosProf,
+    grupo:val("terGrupo"),
+    freq:Number(val("terFreq")),
+    valor:Number(val("terValor")),
+    domiciliar:val("terDom"),
+    taxa:Number(val("terTaxa"))
+  };
+  if(idx !== "" && idx !== undefined){
+    tempTerapias[Number(idx)] = terapia;
+    document.getElementById("terEditIndex").value = "";
+    const btn=document.getElementById("btnAddTer");
+    if(btn) btn.textContent = "Adicionar terapia ao paciente";
+  }else{
+    tempTerapias.push(terapia);
+  }
+  limparFormularioTerapia();
+  document.getElementById("terapiasTemp").innerHTML=renderTempTerapias();
+}
+function editarTerapiaTemp(i){
+  const t=tempTerapias[i];
+  if(!t) return;
+  document.getElementById("terEditIndex").value=i;
+  document.getElementById("terTipo").value=t.tipo||"";
+  document.getElementById("terProf").value=t.profissionalId||"";
+  const grupoAtivo = (t.profissionaisGrupo||[]).length > 0;
+  if(document.getElementById("terGrupoAcesso")){
+    document.getElementById("terGrupoAcesso").value = grupoAtivo ? "sim" : "nao";
+    toggleGrupoAcesso();
+  }
+  document.querySelectorAll(".terProfGrupoCheck").forEach(c=>{
+    c.checked = (t.profissionaisGrupo||[]).includes(c.value);
+  });
+  document.getElementById("terGrupo").value=t.grupo||"Individual";
+  document.getElementById("terFreq").value=t.freq||1;
+  document.getElementById("terValor").value=t.valor||0;
+  document.getElementById("terDom").value=t.domiciliar||"Não";
+  document.getElementById("terTaxa").value=t.taxa||0;
+  const btn=document.getElementById("btnAddTer");
+  if(btn) btn.textContent = "Salvar alteração da terapia";
+  toast("Edite os campos da terapia e clique em salvar alteração.");
+}
+function removerTerapiaTemp(i){
+  if(!confirm("Deseja remover esta terapia/profissional do cadastro do paciente?")) return;
+  tempTerapias.splice(i,1);
+  document.getElementById("terapiasTemp").innerHTML=renderTempTerapias();
+}
+function limparFormularioTerapia(){
+  const idx=document.getElementById("terEditIndex");
+  if(idx) idx.value="";
+  const btn=document.getElementById("btnAddTer");
+  if(btn) btn.textContent = "Adicionar terapia ao paciente";
+  if(document.getElementById("terFreq")) document.getElementById("terFreq").value=1;
+  if(document.getElementById("terValor")) document.getElementById("terValor").value=0;
+  if(document.getElementById("terTaxa")) document.getElementById("terTaxa").value=0;
+  if(document.getElementById("terDom")) document.getElementById("terDom").value="Não";
+  if(document.getElementById("terGrupo")) document.getElementById("terGrupo").value="Individual";
+  if(document.getElementById("terGrupoAcesso")){
+    document.getElementById("terGrupoAcesso").value="nao";
+    toggleGrupoAcesso();
+  }
+  document.querySelectorAll(".terProfGrupoCheck").forEach(c=>c.checked=false);
+}
+function savePaciente(id){
+  atualizarAcessoFamiliaVisual();
+  const nome=val("pacNome"), respCpf=onlyNum(val("pacRespCpf"));
+  let p=id?db.pacientes.find(x=>x.id===id):{id:uid()};
+  const acesso = gerarAcessoFamilia(nome, respCpf);
+  Object.assign(p,{
+    foto:val("pacFotoUrl"),nome,nascimento:val("pacNascimento"),cpf:onlyNum(val("pacCpf")),rg:val("pacRg"),sexo:val("pacSexo"),escola:val("pacEscola"),serie:val("pacSerie"),
+    diagnostico:val("pacDiagnostico"),responsavel:val("pacResp"),responsavelCpf:respCpf,whatsapp:onlyNum(val("pacWhats")),email:val("pacEmail"),endereco:val("pacEndereco"),
+    loginFamilia:acesso.login,senhaFamilia:acesso.senha,observacoes:val("pacObs")
+  });
+  if(!id) db.pacientes.push(p);
+  db.terapias = db.terapias.filter(t=>t.pacienteId!==p.id);
+  tempTerapias.forEach(t=>db.terapias.push({
+    ...t,
+    pacienteId:p.id,
+    profissionalId:t.profissionalId || "",
+    profissionalNome:t.profissionalNome || db.profissionais.find(prof=>prof.id===t.profissionalId)?.nome || "",
+    profissionaisGrupo:t.profissionaisGrupo || [],
+    profissionaisAcesso:t.profissionaisAcesso || [...new Set([t.profissionalId, ...(t.profissionaisGrupo||[])].filter(Boolean))]
+  }));
+  save(); closeModal(); renderApp("pacientes"); toast("Paciente salvo. Login e senha da família foram gerados automaticamente.");
+}
+function val(id){ return document.getElementById(id)?.value || ""; }
+function enviarAcesso(id){
+  const p=db.pacientes.find(x=>x.id===id);
+  const tel=onlyNum(p.whatsapp);
+  const msg=`Olá! Seguem os dados de acesso ao App Família do Espaço Montessoriano.%0A%0ALogin: ${p.loginFamilia}%0ASenha: ${p.senhaFamilia}%0ALink: ${APP_LINK}%0A%0AQualquer dúvida, estamos à disposição.`;
+  window.open(`https://wa.me/55${tel}?text=${msg}`,"_blank");
+}
+function gerarPrevisaoPaciente(id){
+  const p=db.pacientes.find(x=>x.id===id);
+  const terapias=db.terapias.filter(t=>t.pacienteId===id);
+  terapias.forEach(t=>{
+    const mensal=(Number(t.freq)||0)*4*((Number(t.valor)||0)+(Number(t.taxa)||0));
+    db.financeiro.push({id:uid(),pacienteId:id,profissionalId:"",terapia:t.tipo,tipo:t.grupo,valor:mensal,deslocamento:0,dataPrevista:new Date().toISOString().slice(0,10),dataPagamento:"",status:"Pendente",observacoes:`Previsão automática: ${t.freq}x/semana`});
+  });
+  save(); renderApp("financeiro"); toast("Previsão financeira gerada.");
+}
+
+/* Agenda */
+function renderAgenda(){
+  document.getElementById("pageContent").innerHTML = `
+  <div class="panel">
+    <div class="panel-head"><h3>Agenda semanal — 08h às 19h / 30 em 30 minutos</h3><button class="btn" onclick="openAgendaModal()">Novo atendimento</button></div>
+    <div class="panel-body">${agendaGrid()}</div>
+  </div>`;
+}
+function agendaGrid(){
+  const dias=["Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+  let html=`<div class="agenda-grid"><div class="agenda-cell head">Horário</div>${dias.map(d=>`<div class="agenda-cell head">${d}</div>`).join("")}`;
+  for(let h=8;h<19;h++){
+    for(let m of [0,30]){
+      const hora=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0");
+      html+=`<div class="agenda-cell time">${hora}</div>`;
+      dias.forEach(d=>{
+        const events=db.agenda.filter(a=>a.dia===d && a.hora===hora && (!isTerapeuta() || a.profissionalId===currentUser?.id || podeVerPaciente(a.pacienteId)));
+        html+=`<div class="agenda-cell">${events.map(a=>{
+          const p=db.pacientes.find(x=>x.id===a.pacienteId)?.nome||"-";
+          return `<div class="evento"><b>${p}</b>${a.terapia}<br><button class="btn small secondary" onclick="confirmarWhats('${a.id}')">Whats</button> ${a.linkVideo?`<button class="btn small" onclick="window.open('${a.linkVideo}','_blank')">Vídeo</button>`:""}</div>`;
+        }).join("")}</div>`;
+      });
+    }
+  }
+  return html+`</div>`;
+}
+function openAgendaModal(){
+  modal("Novo atendimento",`
+    <div class="form-grid">
+      <div class="field"><label>Paciente</label><select id="agPaciente" onchange="atualizarAgendaProfissionaisPorPaciente()">${pacientesPermitidos().map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+      <div class="field"><label>Profissional</label><select id="agProf"></select></div>
+      <div class="field"><label>Terapia vinculada</label><select id="agTerapia"></select></div>
+      <div class="field"><label>Dia da semana</label><select id="agDia"><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option><option>Sábado</option></select></div>
+      <div class="field"><label>Data</label><input type="date" id="agData"></div>
+      <div class="field"><label>Horário</label><input type="time" id="agHora" step="1800" value="08:00"></div>
+      <div class="field"><label>Status</label><select id="agStatus"><option>Pendente</option><option>Confirmado</option><option>Falta</option><option>Cancelado</option><option>Reposição</option></select></div>
+      <div class="field"><label>Repetição</label><select id="agRep"><option value="nao">Não repetir</option><option value="4">Semanal por 4 semanas</option><option value="12">Semanal por 12 semanas</option><option value="24">Semanal por 24 semanas</option><option value="48">Semanal por 48 semanas</option></select></div>
+      <div class="field"><label>Link atendimento por vídeo</label><input id="agVideo" placeholder="Google Meet, Zoom etc."></div>
+      <div class="field full"><label>Observações</label><textarea id="agObs"></textarea></div>
+    </div>`,`
+    <button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveAgenda()">Salvar</button>`);
+}
+function saveAgenda(){
+  const repeticao = val("agRep");
+  const baseData = val("agData");
+  const qtd = repeticao==="nao" ? 1 : Number(repeticao);
+  for(let i=0;i<qtd;i++){
+    let dataFinal = baseData;
+    if(baseData && i>0){
+      const d = new Date(baseData+"T12:00:00");
+      d.setDate(d.getDate() + (7*i));
+      dataFinal = d.toISOString().slice(0,10);
+    }
+    db.agenda.push({id:uid(),pacienteId:val("agPaciente"),profissionalId:val("agProf"),terapia:val("agTerapia"),dia:val("agDia"),data:dataFinal,hora:val("agHora"),status:val("agStatus"),linkVideo:val("agVideo"),obs:val("agObs"),repeticao:qtd});
+  }
+  save(); closeModal(); renderApp("agenda"); toast(qtd>1 ? "Agenda repetida criada com sucesso." : "Atendimento criado.");
+}
+function confirmarWhats(id){
+  const a=db.agenda.find(x=>x.id===id), p=db.pacientes.find(x=>x.id===a.pacienteId);
+  const msg=`Olá! Confirmamos o atendimento de ${p.nome} no dia ${a.data||a.dia} às ${a.hora}.%0A%0AServiço: ${a.terapia}%0A${a.linkVideo?`Link do atendimento por vídeo: ${a.linkVideo}%0A`:""}%0AEspaço Montessoriano.`;
+  window.open(`https://wa.me/55${onlyNum(p.whatsapp)}?text=${msg}`,"_blank");
+}
+
+/* Prontuario */
+function renderProntuario(){
+  document.getElementById("pageContent").innerHTML = `
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-head"><h3>Prontuário / Evolução textual</h3><div class="actions"><button class="btn secondary" onclick="openDocModal()">Anexar documento ao paciente</button><button class="btn secondary" onclick="openRelatorioMensalModal()">Relatório mensal família</button><button class="btn" onclick="openProntModal()">Nova evolução</button></div></div>
+      <div class="note">O resumo da sessão registrado no prontuário ficará disponível no App Família do respectivo paciente. Terapeutas visualizam apenas prontuários dos pacientes vinculados a eles, inclusive em acesso em grupo.</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Data</th><th>Paciente</th><th>Terapia</th><th>Registro</th><th>Orientação Família</th><th>IA</th></tr></thead><tbody>
+        ${db.prontuarios.filter(r=>podeVerPaciente(r.pacienteId) && (!isTerapeuta() || r.profissionalId===currentUser?.id || podeVerPaciente(r.pacienteId))).map(r=>`<tr><td>${r.data}</td><td>${nomePac(r.pacienteId)}</td><td>${r.terapia}</td><td>${r.registro}</td><td>${r.resumoSessao||"-"}</td><td>${r.resumoIa||"-"}</td></tr>`).join("") || `<tr><td colspan="6">Nenhum registro.</td></tr>`}
+        </tbody></table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Plano de Intervenção</h3><button class="btn" onclick="openPlanoModal()">Novo plano</button></div>
+      <div class="panel-body">
+        ${db.planos.filter(p=>podeVerPaciente(p.pacienteId)).map(p=>`<div class="fam-agenda-item"><strong>${nomePac(p.pacienteId)} — ${p.tipo}</strong><b>Objetivos:</b> ${p.objetivos}<br><b>Estratégias:</b> ${p.estrategias}<br><b>Metas:</b> ${p.metas}</div>`).join("") || `<span class="badge pendente">Nenhum plano cadastrado</span>`}
+      </div>
+    </div>
+  </div>`;
+}
+function nomePac(id){ return db.pacientes.find(p=>p.id===id)?.nome||"-"; }
+function openProntModal(){
+  modal("Novo registro de prontuário",`
+    <div class="form-grid">
+      <div class="field"><label>Paciente</label><select id="prPaciente" onchange="atualizarProntuarioProfissionaisPorPaciente()">${pacientesPermitidos().map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+      <div class="field"><label>Profissional</label><select id="prProf"></select></div>
+      <div class="field"><label>Data</label><input type="date" id="prData" value="${new Date().toISOString().slice(0,10)}"></div>
+      <div class="field"><label>Terapia vinculada</label><select id="prTerapia"></select></div>
+      <div class="field full"><label>Registro da sessão</label><textarea id="prRegistro"></textarea></div>
+      <div class="field full"><label>Resumo da sessão</label><textarea id="prOrientacao"></textarea></div>
+      <div class="field full"><label>Anexar documento</label><input type="file" id="prDoc"></div>
+    </div>`,`
+    <button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn warn" onclick="gerarIARegistro()">Gerar IA</button><button class="btn" onclick="savePront()">Salvar</button>`);
+}
+function gerarIARegistro(){
+  const texto=val("prRegistro");
+  const resumo=`Síntese IA: Na sessão registrada, foram observados aspectos relevantes do desempenho funcional do paciente. Recomenda-se manter acompanhamento estruturado, registrar resposta à mediação e alinhar estratégias com família e escola. Base do registro: ${texto.slice(0,180)}...`;
+  document.getElementById("prRegistro").value = texto + "\n\n" + resumo;
+}
+function savePront(){
+  db.prontuarios.push({id:uid(),pacienteId:val("prPaciente"),profissionalId:val("prProf"),data:val("prData"),terapia:val("prTerapia"),registro:val("prRegistro"),resumoSessao:val("prOrientacao"),resumoIa:"Gerado/organizado no campo de registro"});
+  save(); closeModal(); renderApp("prontuario");
+}
+function openPlanoModal(){
+  modal("Plano de Intervenção",`
+    <div class="form-grid">
+      <div class="field"><label>Paciente</label><select id="plPaciente">${pacientesPermitidos().map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+      <div class="field"><label>Tipo de plano</label><select id="plTipo"><option>Trimestral</option><option>Semestral</option><option>Anual</option></select></div>
+      <div class="field full"><label>Objetivos</label><textarea id="plObj"></textarea></div>
+      <div class="field full"><label>Estratégias</label><textarea id="plEst"></textarea></div>
+      <div class="field full"><label>Metas</label><textarea id="plMetas"></textarea></div>
+      <div class="field full"><label>Critérios de evolução</label><textarea id="plCrit"></textarea></div>
+    </div>`,`
+    <button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" onclick="savePlano()">Salvar</button>`);
+}
+function savePlano(){
+  db.planos.push({id:uid(),pacienteId:val("plPaciente"),tipo:val("plTipo"),objetivos:val("plObj"),estrategias:val("plEst"),metas:val("plMetas"),criterios:val("plCrit")});
+  save(); closeModal(); renderApp("prontuario");
+}
+
+/* Financeiro */
+function renderFinanceiro(){
+  if(!canAccess("financeiro")){
+    document.getElementById("pageContent").innerHTML = `<div class="panel"><div class="panel-head"><h3>Acesso restrito</h3></div><div class="panel-body"><div class="note">Você não possui permissão para acessar o financeiro da clínica.</div></div></div>`;
+    return;
+  }
+
+  const receitas=db.financeiro.filter(f=>(f.movimento||"Receita")==="Receita");
+  const despesas=db.financeiro.filter(f=>f.movimento==="Despesa");
+  const total=receitas.reduce((s,f)=>s+(Number(f.valor)||0)+(Number(f.deslocamento)||0),0);
+  const pago=receitas.filter(f=>f.status==="Pago").reduce((s,f)=>s+(Number(f.valor)||0)+(Number(f.deslocamento)||0),0);
+  const totalDespesas=despesas.reduce((s,f)=>s+(Number(f.valor)||0),0);
+  const saldoPrevisto=total-totalDespesas;
+  document.getElementById("pageContent").innerHTML = `
+  <div class="cards">
+    <div class="card"><div class="label">Receitas previstas</div><div class="value">${money(total)}</div></div>
+    <div class="card"><div class="label">Recebido</div><div class="value">${money(pago)}</div></div>
+    <div class="card"><div class="label">Despesas</div><div class="value">${money(totalDespesas)}</div></div>
+    <div class="card"><div class="label">Saldo previsto</div><div class="value">${money(saldoPrevisto)}</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>Prontuário financeiro conectado</h3><button class="btn" onclick="openFinanceiroModal()">Novo lançamento</button></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Movimento</th><th>Paciente</th><th>Categoria/Serviço</th><th>Descrição</th><th>Valor</th><th>Desloc.</th><th>Data</th><th>Status</th></tr></thead><tbody>
+      ${db.financeiro.map(f=>`<tr><td><span class="badge ${((f.movimento||'Receita')==='Receita')?'ok':'cancelado'}">${f.movimento||'Receita'}</span></td><td>${f.pacienteId?nomePac(f.pacienteId):"-"}</td><td>${f.terapia}</td><td>${f.observacoes||"-"}</td><td>${money(f.valor)}</td><td>${money(f.deslocamento)}</td><td>${f.dataPrevista}</td><td><span class="badge ${f.status==='Pago'?'ok':'pendente'}">${f.status}</span></td></tr>`).join("") || `<tr><td colspan="8">Nenhum lançamento.</td></tr>`}
+      </tbody></table>
+    </div>
+  </div>`;
+}
+function openFinanceiroModal(){
+  modal("Novo lançamento financeiro",`
+  <div class="form-grid">
+    <div class="field"><label>Movimento</label><select id="fiMov"><option>Receita</option><option>Despesa</option></select></div>
+    <div class="field"><label>Paciente</label><select id="fiPaciente"><option value="">Sem vínculo direto</option>${db.pacientes.map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+    <div class="field"><label>Categoria / Serviço</label><select id="fiTerapia">${servicosOptions()}<option>Aluguel</option><option>Salário/Repasse profissional</option><option>Materiais terapêuticos</option><option>Impostos</option><option>Marketing</option><option>Manutenção</option><option>Outras despesas</option></select></div>
+    <div class="field"><label>Individual ou grupo</label><select id="fiTipo"><option>Individual</option><option>Grupo</option><option>Domiciliar</option><option>Evento/Outro</option></select></div>
+    <div class="field"><label>Valor</label><input type="number" id="fiValor" value="0" step="0.01"></div>
+    <div class="field"><label>Taxa deslocamento</label><input type="number" id="fiDesloc" value="0" step="0.01"></div>
+    <div class="field"><label>Data prevista</label><input type="date" id="fiData" value="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="field"><label>Status</label><select id="fiStatus"><option>Pendente</option><option>Pago</option><option>Parcial</option></select></div>
+    <div class="field full">
+      <div class="note">
+      <b>Permissões automáticas:</b><br>
+      • Terapeuta: apenas prontuários/documentos dos pacientes vinculados às próprias terapias ou ao acesso em grupo.<br>
+      • Recepção: agenda, pacientes e prontuários sem financeiro.<br>
+      • Financeiro: acesso somente ao módulo financeiro.<br>
+      • Administradora: acesso total ao sistema.
+      </div>
+    </div>
+    <div class="field full"><label>Observações</label><textarea id="fiObs"></textarea></div>
+  </div>`,`
+  <button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveFin()">Salvar</button>`);
+}
+function saveFin(){
+  db.financeiro.push({id:uid(),movimento:val("fiMov"),pacienteId:val("fiPaciente"),terapia:val("fiTerapia"),tipo:val("fiTipo"),valor:Number(val("fiValor")),deslocamento:Number(val("fiDesloc")),dataPrevista:val("fiData"),status:val("fiStatus"),observacoes:val("fiObs")});
+  save(); closeModal(); renderApp("financeiro");
+}
+
+/* Profissionais */
+function renderProfissionais(){
+  document.getElementById("pageContent").innerHTML = `
+  <div class="panel">
+    <div class="panel-head"><h3>Cadastro de profissionais</h3><button class="btn" onclick="openProfModal()">Novo profissional</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Profissão</th><th>Login</th><th>Senha</th><th>Nível</th><th>Ações</th></tr></thead><tbody>
+    ${db.profissionais.map(p=>`<tr>
+      <td>${p.foto?`<img src="${p.foto}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle">`:""}<b>${p.nome}</b><br>${p.whatsapp||""}</td>
+      <td>${p.profissao||"-"}<br><small>${p.especialidade||""}</small></td>
+      <td><code>${p.login||p.email||"-"}</code></td>
+      <td><code>${p.senha||"-"}</code></td>
+      <td>${p.nivel||"-"}<br><small>${(p.documentos||[]).length} doc(s)</small></td>
+      <td class="actions">
+        <button class="btn small" onclick="openProfModal('${p.id}')">Editar</button>
+        <button class="btn small secondary" onclick="reenviarAcessoProfissional('${p.id}')">Enviar acesso</button>
+        <button class="btn small danger" onclick="excluirProfissional('${p.id}')">Excluir</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="6">Nenhum profissional cadastrado.</td></tr>`}
+    </tbody></table></div>
+  </div>`;
+}
+function openProfModal(id=""){
+  const p = id ? db.profissionais.find(x=>x.id===id) : {};
+  modal(id ? "Editar profissional" : "Cadastrar profissional",`
+  <div class="form-grid">
+    <div class="field full">
+      <label>Foto do profissional</label>
+      <input type="file" id="pfFoto" accept="image/*" onchange="profFotoFile(event)">
+      <input type="hidden" id="pfFotoUrl" value="${p.foto||""}">
+      <div id="pfFotoPrev">${p.foto?`<img src="${p.foto}" style="margin-top:8px;width:70px;height:70px;border-radius:50%;object-fit:cover">`:""}</div>
+    </div>
+    <div class="field"><label>Nome</label><input id="pfNome" value="${p.nome||""}"></div>
+    <div class="field"><label>CPF</label><input id="pfCpf" value="${p.cpf||""}"></div>
+    <div class="field"><label>Profissão</label><input id="pfProfissao" value="${p.profissao||""}"></div>
+    <div class="field"><label>Conselho</label><input id="pfConselho" value="${p.conselho||""}"></div>
+    <div class="field"><label>Especialidade</label><input id="pfEsp" value="${p.especialidade||""}"></div>
+    <div class="field"><label>WhatsApp</label><input id="pfWhats" value="${p.whatsapp||""}"></div>
+    <div class="field"><label>E-mail/Login</label><input id="pfEmail" value="${p.email||p.login||""}"></div>
+    <div class="field"><label>Senha</label><input id="pfSenha" value="${p.senha||"Espaco@123"}"></div>
+    <div class="field"><label>Nível de acesso</label><select id="pfNivel">
+      ${["Terapeuta","Administradora","Coordenação","Financeiro","Recepção"].map(n=>`<option ${p.nivel===n?"selected":""}>${n}</option>`).join("")}
+    </select></div>
+    <div class="field full">
+      <div class="note">
+      <b>Permissões automáticas:</b><br>
+      • Terapeuta: apenas prontuários/documentos dos pacientes vinculados às próprias terapias ou ao acesso em grupo.<br>
+      • Recepção: agenda, pacientes e prontuários sem financeiro.<br>
+      • Financeiro: acesso somente ao módulo financeiro.<br>
+      • Administradora: acesso total ao sistema.
+      </div>
+    </div>
+    <div class="field full">
+      <label>Anexar novos documentos do profissional</label>
+      <input type="file" id="pfDocs" multiple>
+      <div class="note">Ao editar, os novos documentos serão adicionados aos já cadastrados. Documentos atuais: ${(p.documentos||[]).length}</div>
+    </div>
+  </div>`,`
+  <button class="btn secondary" onclick="closeModal()">Cancelar</button>
+  <button class="btn" onclick="saveProf('${id||""}')">${id ? "Salvar alterações" : "Salvar"}</button>`);
+}
+function profFotoFile(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ document.getElementById("pfFotoUrl").value=r.result; document.getElementById("pfFotoPrev").innerHTML=`<img src="${r.result}" style="margin-top:8px;width:70px;height:70px;border-radius:50%;object-fit:cover">`; };
+  r.readAsDataURL(f);
+}
+function saveProf(id=""){
+  const docsNovos = Array.from(document.getElementById("pfDocs")?.files||[]).map(f=>({nome:f.name,tipo:f.type,data:new Date().toISOString()}));
+  let prof = id ? db.profissionais.find(x=>x.id===id) : {id:uid(), documentos:[]};
+  if(!prof){ toast("Profissional não encontrado."); return; }
+  const docsAtuais = Array.isArray(prof.documentos) ? prof.documentos : [];
+  Object.assign(prof,{
+    foto:val("pfFotoUrl"),
+    documentos:[...docsAtuais, ...docsNovos],
+    nome:val("pfNome"),
+    cpf:onlyNum(val("pfCpf")),
+    profissao:val("pfProfissao"),
+    conselho:val("pfConselho"),
+    especialidade:val("pfEsp"),
+    whatsapp:onlyNum(val("pfWhats")),
+    email:val("pfEmail"),
+    login:val("pfEmail"),
+    senha:val("pfSenha")||"Espaco@123",
+    nivel:val("pfNivel")
+  });
+  if(!id) db.profissionais.push(prof);
+  save(); closeModal(); renderApp("profissionais"); toast(id ? "Profissional atualizado." : "Profissional cadastrado.");
+}
+function excluirProfissional(id){
+  const prof = db.profissionais.find(p=>p.id===id);
+  if(!prof) return;
+  if(!confirm(`Deseja excluir o profissional ${prof.nome}?`)) return;
+  db.profissionais = db.profissionais.filter(p=>p.id!==id);
+  save(); renderApp("profissionais"); toast("Profissional excluído.");
+}
+function reenviarAcessoProfissional(id){
+  const p=db.profissionais.find(x=>x.id===id);
+  if(!p){ toast("Profissional não encontrado."); return; }
+  const tel=onlyNum(p.whatsapp);
+  const msg=`Olá, ${p.nome}! Seguem seus dados de acesso ao Sistema do Espaço Montessoriano.%0A%0ALogin: ${p.login||p.email}%0ASenha: ${p.senha}%0ALink: ${APP_LINK}%0A%0AEspaço Montessoriano.`;
+  if(tel) window.open(`https://wa.me/55${tel}?text=${msg}`,"_blank");
+  else toast("Este profissional está sem WhatsApp cadastrado.");
+}
+
+/* Documentos */
+function renderDocumentos(){
+  document.getElementById("pageContent").innerHTML=`
+  <div class="panel">
+    <div class="panel-head"><h3>Documentos e anexos</h3><button class="btn" onclick="openDocModal()">Anexar documento</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Documento</th><th>Tipo</th><th>Arquivo</th></tr></thead><tbody>
+    ${db.documentos.filter(d=>podeVerPaciente(d.pacienteId)).map(d=>`<tr><td>${nomePac(d.pacienteId)}</td><td>${d.nome}</td><td>${d.tipo}</td><td>${d.url?`<a href="${d.url}" target="_blank">Abrir</a>`:"arquivo local registrado"}</td></tr>`).join("") || `<tr><td colspan="4">Nenhum documento anexado.</td></tr>`}
+    </tbody></table></div>
+  </div>`;
+}
+function openDocModal(){
+  modal("Anexar documento",`
+  <div class="form-grid">
+    <div class="field"><label>Paciente</label><select id="docPac">${pacientesPermitidos().map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+    <div class="field"><label>Tipo</label><select id="docTipo"><option>Relatório</option><option>Laudo</option><option>Avaliação</option><option>Contrato</option><option>Imagem</option><option>Outro</option></select></div>
+    <div class="field full">
+      <div class="note">
+      <b>Permissões automáticas:</b><br>
+      • Terapeuta: apenas prontuários/documentos dos pacientes vinculados às próprias terapias ou ao acesso em grupo.<br>
+      • Recepção: agenda, pacientes e prontuários sem financeiro.<br>
+      • Financeiro: acesso somente ao módulo financeiro.<br>
+      • Administradora: acesso total ao sistema.
+      </div>
+    </div>
+    <div class="field full"><label>Nome do documento</label><input id="docNome"></div>
+    <div class="field full"><label>Arquivo</label><input type="file" id="docArquivo" onchange="docFile(event)"><input type="hidden" id="docUrl"></div>
+  </div>`,`
+  <button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDoc()">Salvar</button>`);
+}
+function docFile(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>document.getElementById("docUrl").value=r.result; r.readAsDataURL(f);
+}
+function saveDoc(){
+  db.documentos.push({id:uid(),pacienteId:val("docPac"),nome:val("docNome"),tipo:val("docTipo"),url:val("docUrl"),createdAt:new Date().toISOString()});
+  save(); closeModal(); renderApp("documentos");
+}
+
+
+function openRelatorioMensalModal(){
+  const hoje = new Date();
+  const mesAtual = hoje.toISOString().slice(0,7);
+  modal("Relatório mensal para família",`
+    <div class="form-grid">
+      <div class="field"><label>Paciente</label><select id="rmPaciente">${pacientesPermitidos().map(p=>`<option value="${p.id}">${p.nome}</option>`).join("")}</select></div>
+      <div class="field"><label>Mês de referência</label><input type="month" id="rmMes" value="${mesAtual}"></div>
+      <div class="field full"><label>Relatório gerado</label><textarea id="rmTexto" placeholder="Clique em gerar relatório."></textarea></div>
+    </div>`,`
+    <button class="btn secondary" onclick="closeModal()">Cancelar</button>
+    <button class="btn secondary" onclick="gerarRelatorioMensalFamilia()">Gerar relatório</button>
+    <button class="btn" onclick="enviarRelatorioMensalWhats()">Enviar WhatsApp</button>`);
+}
+function gerarRelatorioMensalFamilia(){
+  const pacienteId=val("rmPaciente");
+  const mes=val("rmMes");
+  const paciente=db.pacientes.find(p=>p.id===pacienteId);
+  const regs=db.prontuarios.filter(r=>r.pacienteId===pacienteId && String(r.data||"").slice(0,7)===mes);
+  const planos=db.planos.filter(p=>p.pacienteId===pacienteId);
+  let texto=`RELATÓRIO MENSAL DE ACOMPANHAMENTO\n\nPaciente: ${paciente?.nome||"-"}\nMês de referência: ${mes}\n\n`;
+  if(!regs.length){
+    texto += "No período selecionado, ainda não há registros de sessões lançados no prontuário.\n";
+  }else{
+    texto += `Foram registrados ${regs.length} atendimento(s) no período.\n\n`;
+    texto += "SÍNTESE DOS ATENDIMENTOS:\n";
+    regs.forEach((r,i)=>{
+      texto += `\n${i+1}. Data: ${r.data} | Terapia: ${r.terapia}\n`;
+      texto += `Registro: ${limparTexto(r.registro, 450)}\n`;
+      if(r.orientacao) texto += `Resumo da sessão: ${limparTexto(r.orientacao, 350)}\n`;
+    });
+  }
+  if(planos.length){
+    const ultimo=planos[planos.length-1];
+    texto += `\nPLANO DE INTERVENÇÃO ATIVO (${ultimo.tipo}):\nObjetivos: ${limparTexto(ultimo.objetivos,350)}\nMetas: ${limparTexto(ultimo.metas,350)}\n`;
+  }
+  texto += "\nORIENTAÇÃO FINAL:\nA família poderá acompanhar os resumos das sessões no App Família. Permanecemos à disposição para alinhamentos.\n\nEspaço Montessoriano";
+  document.getElementById("rmTexto").value=texto;
+}
+function limparTexto(t, max){
+  t=String(t||"").replace(/\s+/g," ").trim();
+  return t.length>max ? t.slice(0,max)+"..." : t;
+}
+function enviarRelatorioMensalWhats(){
+  const pacienteId=val("rmPaciente");
+  const paciente=db.pacientes.find(p=>p.id===pacienteId);
+  const texto=val("rmTexto") || "";
+  if(!texto){ toast("Gere o relatório antes de enviar."); return; }
+  const tel=onlyNum(paciente?.whatsapp);
+  if(!tel){ toast("Paciente sem WhatsApp do responsável cadastrado."); return; }
+  window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(texto)}`,"_blank");
+}
+
+/* Familia portal */
+function renderFamilia(){
+  const p=currentUser;
+  const agenda=db.agenda.filter(a=>a.pacienteId===p.id);
+  const docs=db.documentos.filter(d=>d.pacienteId===p.id);
+  const orientacoes=db.prontuarios.filter(r=>r.pacienteId===p.id && r.resumoSessao);
+  document.getElementById("app").innerHTML=`
+  <div class="content fam-portal">
+    <div class="fam-header">
+      <div><h2>App Família — Espaço Montessoriano</h2><p>Bem-vindo(a), família de ${p.nome}</p></div>
+      <button class="btn secondary small" onclick="logout()">Sair</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="label">Paciente</div><div class="value" style="font-size:1.05rem">${p.nome}</div></div>
+      <div class="card"><div class="label">Agenda</div><div class="value">${agenda.length}</div></div>
+      <div class="card"><div class="label">Documentos</div><div class="value">${docs.length}</div></div>
+      <div class="card"><div class="label">WhatsApp</div><button class="btn small" onclick="openWhatsEspaco()">Falar com Espaço</button></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>Agenda do paciente</h3></div><div class="panel-body">
+      ${agenda.map(a=>`<div class="fam-agenda-item"><strong>${a.dia} • ${a.hora}</strong>${a.terapia}<br>Status: <span class="badge ${a.status==='Confirmado'?'ok':'pendente'}">${a.status}</span><br>${a.linkVideo?`<button class="btn small" onclick="window.open('${a.linkVideo}','_blank')">Entrar no atendimento por vídeo</button>`:""}</div>`).join("") || "Nenhum atendimento cadastrado."}
+    </div></div>
+    <div class="panel"><div class="panel-head"><h3>Resumo das sessões</h3></div><div class="panel-body">
+      ${orientacoes.map(o=>`<div class="fam-agenda-item"><strong>${o.data} • ${o.terapia}</strong>${o.resumoSessao}</div>`).join("") || "Nenhuma orientação registrada para a família."}
+    </div></div>
+    <div class="panel"><div class="panel-head"><h3>Documentos liberados</h3></div><div class="panel-body">
+      ${docs.map(d=>`<div class="fam-agenda-item"><strong>${d.nome}</strong>${d.tipo}<br><a href="${d.url}" target="_blank">Abrir documento</a></div>`).join("") || "Nenhum documento liberado."}
+    </div></div>
+  </div>`;
+}
+
+/* Config */
+function renderConfig(){
+  document.getElementById("pageContent").innerHTML=`
+  <div class="panel">
+    <div class="panel-head"><h3>Supabase — pronto para conectar</h3></div>
+    <div class="panel-body">
+      <p>Esta versão funciona localmente e está preparada para Supabase. Para virar sistema online real, use as tabelas abaixo.</p>
+      <hr>
+      <button class="btn" onclick="downloadSQL()">Baixar SQL do Supabase</button>
+      <button class="btn secondary" onclick="exportDB()">Exportar dados locais JSON</button>
+      <button class="btn secondary" onclick="repararVinculos()">Reparar vínculos antigos</button>
+      <hr>
+      <div class="dica"><b>Login profissional inicial:</b> vanessa@espacomontessoriano.com / Espaco@123<br><b>Login família exemplo:</b> 00000000000 / laura123</div>
+    </div>
+  </div>`;
+}
+
+function repararVinculos(){
+  let alterados=0;
+  db.terapias.forEach(t=>{
+    if(!t.profissionalId && db.profissionais[0]){
+      t.profissionalId=db.profissionais[0].id;
+      t.profissionalNome=db.profissionais[0].nome;
+      alterados++;
+    }
+  });
+  save();
+  toast(alterados ? `${alterados} vínculo(s) antigo(s) reparado(s).` : "Nenhum vínculo antigo precisava de reparo.");
+}
+function downloadSQL(){
+  const sql = `
+create table pacientes (
+  id uuid primary key default gen_random_uuid(),
+  foto_url text,
+  nome text not null,
+  data_nascimento date,
+  cpf text,
+  rg text,
+  sexo text,
+  escola text,
+  serie text,
+  diagnostico text,
+  observacoes text,
+  responsavel_nome text,
+  responsavel_cpf text,
+  responsavel_whatsapp text,
+  responsavel_email text,
+  endereco text,
+  login_familia text,
+  senha_temporaria text,
+  created_at timestamp with time zone default now()
+);
+
+create table profissionais (
+  id uuid primary key default gen_random_uuid(),
+  foto_url text,
+  documentos jsonb,
+  nome text not null,
+  cpf text,
+  profissao text,
+  conselho text,
+  especialidade text,
+  whatsapp text,
+  email text,
+  login text,
+  senha_temporaria text,
+  nivel_acesso text,
+  created_at timestamp with time zone default now()
+);
+
+create table terapias (
+  id uuid primary key default gen_random_uuid(),
+  paciente_id uuid references pacientes(id) on delete cascade,
+  profissional_id uuid references profissionais(id),
+  tipo_terapia text,
+  individual_ou_grupo text,
+  frequencia_semanal numeric,
+  valor_sessao numeric,
+  domiciliar boolean default false,
+  taxa_deslocamento numeric default 0,
+  observacoes text
+);
+
+create table agenda (
+  id uuid primary key default gen_random_uuid(),
+  paciente_id uuid references pacientes(id) on delete cascade,
+  profissional_id uuid references profissionais(id),
+  terapia_id uuid references terapias(id),
+  dia_semana text,
+  data date,
+  horario_inicio time,
+  horario_fim time,
+  status text,
+  link_video text,
+  observacoes text,
+  created_at timestamp with time zone default now()
+);
+
+create table prontuario (
+  id uuid primary key default gen_random_uuid(),
+  paciente_id uuid references pacientes(id) on delete cascade,
+  profissional_id uuid references profissionais(id),
+  data date,
+  terapia text,
+  registro text,
+  resumo_sessao text,
+  resumo_ia text,
+  created_at timestamp with time zone default now()
+);
+
+create table planos_intervencao (
+  id uuid primary key default gen_random_uuid(),
+  paciente_id uuid references pacientes(id) on delete cascade,
+  tipo_plano text,
+  objetivos text,
+  estrategias text,
+  metas text,
+  criterios text,
+  created_at timestamp with time zone default now()
+);
+
+create table financeiro (
+  id uuid primary key default gen_random_uuid(),
+  movimento text default 'Receita',
+  paciente_id uuid references pacientes(id) on delete cascade,
+  profissional_id uuid references profissionais(id),
+  terapia text,
+  valor numeric,
+  tipo text,
+  deslocamento numeric default 0,
+  data_prevista date,
+  data_pagamento date,
+  status text,
+  observacoes text,
+  created_at timestamp with time zone default now()
+);
+
+create table documentos (
+  id uuid primary key default gen_random_uuid(),
+  paciente_id uuid references pacientes(id) on delete cascade,
+  nome_documento text,
+  tipo text,
+  url text,
+  created_at timestamp with time zone default now()
+);
+
+insert into profissionais (nome, profissao, especialidade, email, login, senha_temporaria, nivel_acesso)
+values ('Vanessa Oliveira', 'Fonoaudióloga / Psicopedagoga', 'Montessori, Neurodesenvolvimento e Clínica Multidisciplinar', 'vanessa@espacomontessoriano.com', 'vanessa@espacomontessoriano.com', 'Espaco@123', 'Administradora');
+`;
+  download("supabase_espaco_montessoriano.sql", sql);
+}
+function exportDB(){ download("dados_sistema_espaco_montessoriano.json", JSON.stringify(db,null,2)); }
+function download(filename, text){
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type:"text/plain"})); a.download=filename; a.click();
+}
+
+/* Modal helpers */
+function modal(title, body, foot){
+  document.body.insertAdjacentHTML("beforeend",`<div class="overlay on" id="modalOverlay"><div class="modal"><div class="modal-head"><h3>${title}</h3><button class="btn small secondary" onclick="closeModal()">X</button></div><div class="modal-body">${body}</div><div class="modal-foot">${foot||""}</div></div></div>`);
+  setTimeout(()=>{ 
+    const login=document.getElementById("pacLoginFam"), senha=document.getElementById("pacSenhaFam");
+    if(document.getElementById("pacNome") && (!login?.value || !senha?.value)) atualizarAcessoFamiliaVisual();
+    if(document.getElementById("agPaciente")) atualizarAgendaProfissionaisPorPaciente();
+    if(document.getElementById("prPaciente")) atualizarProntuarioProfissionaisPorPaciente();
+    if(document.getElementById("terGrupoAcesso")) toggleGrupoAcesso();
+  }, 30);
+}
+function closeModal(){ const m=document.getElementById("modalOverlay"); if(m) m.remove(); }
+
+renderLogin();
+</script>
+</body>
+</html>
