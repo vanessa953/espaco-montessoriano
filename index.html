@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2E9E82">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Espaço Montessoriano">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <title>Espaço Montessoriano — Desenvolvimento Infantil Integrado</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -407,4 +413,11 @@ footer{background:#0d4f3c;padding:22px 4%;text-align:center;color:rgba(255,255,2
 <a class="waf" href="https://wa.me/5561993236099" target="_blank">💬</a>
 
 </body>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/service-worker.js");
+  });
+}
+</script>
 </html>
