@@ -1,11 +1,14 @@
 {
   "name": "Espaço Montessoriano",
   "short_name": "Montessoriano",
+  "description": "Desenvolvimento infantil integrado",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0f7f68",
   "theme_color": "#0f7f68",
+  "lang": "pt-BR",
   "icons": [
     {
       "src": "/icon-192.png",
